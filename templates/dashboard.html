@@ -484,6 +484,234 @@
 
     .clicked { transform: scale(0.97); }
 
+    /* Premium Quick Action Buttons */
+    .quick-action.premium-btn {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 251, 255, 0.9));
+      border: 1.5px solid rgba(226, 232, 240, 0.6);
+      box-shadow: 0 12px 32px rgba(37, 99, 235, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .quick-action.premium-btn::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.4) 100%);
+      pointer-events: none;
+    }
+
+    .quick-action.premium-btn:hover {
+      transform: translateY(-4px);
+      border-color: rgba(37, 99, 235, 0.3);
+      box-shadow: 0 20px 48px rgba(37, 99, 235, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .quick-action.premium-btn:active {
+      transform: translateY(-2px);
+    }
+
+    .deposit-btn i { color: #16a34a; }
+    .withdraw-btn i { color: #dc2626; }
+    .send-btn i { color: #7c3aed; }
+
+    .premium-btn i {
+      transition: 0.3s ease;
+    }
+
+    .deposit-btn i {
+      background: rgba(22, 163, 74, 0.12);
+      color: #16a34a;
+    }
+
+    .withdraw-btn i {
+      background: rgba(220, 38, 38, 0.12);
+      color: #dc2626;
+    }
+
+    .send-btn i {
+      background: rgba(124, 58, 237, 0.12);
+      color: #7c3aed;
+    }
+
+    .quick-action.premium-btn:hover i {
+      transform: scale(1.15);
+    }
+
+    /* Premium Receipt Panel */
+    .receipt-panel {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 255, 0.95));
+      border: 1.5px solid rgba(226, 232, 240, 0.8);
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 20px 48px rgba(37, 99, 235, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(20px);
+      animation: receiptSlideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes receiptSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .receipt-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .receipt-header i {
+      font-size: 1.5rem;
+      color: var(--primary);
+      background: var(--primary-soft);
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+    }
+
+    .receipt-header h2 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .receipt-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(37, 99, 235, 0.2) 50%, transparent 100%);
+      margin: 20px 0;
+    }
+
+    .receipt-divider-subtle {
+      height: 1px;
+      background: rgba(226, 232, 240, 0.6);
+      margin: 16px 0;
+    }
+
+    .receipt-content {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .receipt-section {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .receipt-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .receipt-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .receipt-value {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .receipt-amount {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.02em;
+    }
+
+    .receipt-ref-id {
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+    }
+
+    .receipt-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, rgba(22, 163, 74, 0.08), rgba(22, 163, 74, 0.04));
+      border: 1px solid rgba(22, 163, 74, 0.2);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin: 12px 0;
+      font-weight: 700;
+      color: #166534;
+    }
+
+    .receipt-status i {
+      font-size: 1.1rem;
+      color: #16a34a;
+    }
+
+    .receipt-download-btn {
+      width: 100%;
+      border: none;
+      background: linear-gradient(135deg, var(--primary), #1d4ed8);
+      color: #fff;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-weight: 800;
+      font-size: 0.92rem;
+      cursor: pointer;
+      transition: 0.3s ease;
+      margin-top: 12px;
+      box-shadow: 0 12px 32px rgba(37, 99, 235, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .receipt-download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 48px rgba(37, 99, 235, 0.35);
+    }
+
+    .receipt-download-btn:active {
+      transform: translateY(0);
+    }
+
+    @media (max-width: 640px) {
+      .receipt-row {
+        grid-template-columns: 1fr;
+      }
+
+      .receipt-panel {
+        padding: 20px;
+      }
+
+      .receipt-amount {
+        font-size: 1.5rem;
+      }
+
+      .receipt-header {
+        gap: 10px;
+      }
+
+      .receipt-header h2 {
+        font-size: 1.05rem;
+      }
+    }
+
+
     .donut-wrap {
       display: flex;
       align-items: center;
@@ -957,9 +1185,9 @@
               <h2 class="panel-title">Quick Actions</h2>
             </div>
             <div class="quick-grid" style="grid-template-columns:repeat(3,1fr);">
-              <button class="quick-action" type="button" data-link="{{ url_for('deposit') }}" style="--qa-color:#16a34a;--qa-bg:#dcfce7;"><i class="fas fa-arrow-down-to-line" style="background:#dcfce7;color:#16a34a;"></i><span>Deposit</span></button>
-              <button class="quick-action" type="button" data-link="{{ url_for('withdraw') }}" style="--qa-color:#dc2626;--qa-bg:#fee2e2;"><i class="fas fa-arrow-up-from-line" style="background:#fee2e2;color:#dc2626;"></i><span>Withdraw</span></button>
-              <button class="quick-action" type="button" data-link="{{ url_for('send') }}" style="--qa-color:#7c3aed;--qa-bg:#ede9fe;"><i class="fas fa-paper-plane" style="background:#ede9fe;color:#7c3aed;"></i><span>Send Money</span></button>
+              <button class="quick-action premium-btn deposit-btn" type="button" data-link="{{ url_for('deposit') }}"><i class="fas fa-circle-arrow-down"></i><span>Deposit</span></button>
+              <button class="quick-action premium-btn withdraw-btn" type="button" data-link="{{ url_for('withdraw') }}"><i class="fas fa-circle-arrow-up"></i><span>Withdraw</span></button>
+              <button class="quick-action premium-btn send-btn" type="button" data-link="{{ url_for('send') }}"><i class="fas fa-paper-plane"></i><span>Send Money</span></button>
             </div>
           </article>
         </div>
@@ -980,58 +1208,56 @@
             </div>
           </article>
 
-          <article class="panel">
-            <div class="panel-head">
-              <h2 class="panel-title">Important Alerts</h2>
+          <article class="receipt-panel">
+            <div class="receipt-header">
+              <i class="fas fa-receipt"></i>
+              <h2>Transaction Receipt</h2>
             </div>
-            <div class="alerts-list" id="alertsList">
-              <div class="alert-item">
-                <div class="alert-top">
-                  <div style="display:flex; align-items:center; gap:12px;">
-                    <div class="alert-icon blue"><i class="fas fa-circle-info"></i></div>
-                    <div>
-                      <div class="alert-title">Account status is healthy</div>
-                      <div class="alert-text">All active accounts are monitored and operating normally.</div>
-                    </div>
-                  </div>
-                  <button class="text-btn alert-dismiss" type="button">Dismiss</button>
+
+            <div class="receipt-divider"></div>
+
+            <div class="receipt-content">
+              <div class="receipt-section">
+                <span class="receipt-label">Transaction Type</span>
+                <span class="receipt-value" id="receiptType">Deposit</span>
+              </div>
+
+              <div class="receipt-section">
+                <span class="receipt-label">Amount</span>
+                <div class="receipt-amount" id="receiptAmount">PHP 0.00</div>
+              </div>
+
+              <div class="receipt-divider-subtle"></div>
+
+              <div class="receipt-row">
+                <div class="receipt-section">
+                  <span class="receipt-label">Date & Time</span>
+                  <span class="receipt-value" id="receiptTime">N/A</span>
                 </div>
               </div>
 
-              <div class="alert-item">
-                <div class="alert-top">
-                  <div style="display:flex; align-items:center; gap:12px;">
-                    <div class="alert-icon orange"><i class="fas fa-triangle-exclamation"></i></div>
-                    <div>
-                      <div class="alert-title">Security reminder</div>
-                      <div class="alert-text">Never share your OTP, password, or mobile verification code.</div>
-                    </div>
-                  </div>
-                  <button class="text-btn alert-dismiss" type="button">Dismiss</button>
+              <div class="receipt-row">
+                <div class="receipt-section">
+                  <span class="receipt-label">Account</span>
+                  <span class="receipt-value">{{ account_number[:4] }}...{{ account_number[-4:] }}</span>
+                </div>
+                <div class="receipt-section">
+                  <span class="receipt-label">Reference ID</span>
+                  <span class="receipt-value receipt-ref-id" id="receiptRefId">RCP-000000</span>
                 </div>
               </div>
 
-              <div class="alert-item">
-                <div class="alert-top">
-                  <div style="display:flex; align-items:center; gap:12px;">
-                    <div class="alert-icon green"><i class="fas fa-circle-check"></i></div>
-                    <div>
-                      <div class="alert-title">Profile update available</div>
-                      <div class="alert-text">Review your details to keep your account secure and complete.</div>
-                    </div>
-                  </div>
-                  <button class="text-btn alert-dismiss" type="button">Dismiss</button>
-                </div>
+              <div class="receipt-divider-subtle"></div>
+
+              <div class="receipt-status">
+                <i class="fas fa-circle-check"></i>
+                <span>Completed Successfully</span>
               </div>
             </div>
-          </article>
 
-          <article class="panel security-card">
-            <div class="panel-head" style="margin-bottom:0;">
-              <h2 class="panel-title">Security Card</h2>
-            </div>
-            <p id="securityMessage">Stay Secure, Stay Protected. Add another layer of security to your online banking profile.</p>
-            <button class="security-btn" id="securityBtn" type="button">Enable Now</button>
+            <button class="receipt-download-btn" type="button" id="downloadReceiptBtn">
+              <i class="fas fa-download"></i> Download Receipt
+            </button>
           </article>
         </div>
 
@@ -1587,6 +1813,63 @@ document.querySelectorAll('.account-item').forEach((item) => {
         btn.disabled = false; btn.innerHTML = '<i class="fas fa-lock"></i> Update Password';
       })
       .catch(() => { errEl.textContent = 'Network error.'; errEl.style.display = 'block'; btn.disabled = false; btn.innerHTML = '<i class="fas fa-lock"></i> Update Password'; });
+    });
+
+    // Receipt Panel Functionality
+    function updateReceiptDisplay(type, amount) {
+      document.getElementById('receiptType').textContent = type || 'Transaction';
+      const formattedAmount = typeof amount === 'number' ? amount.toFixed(2) : '0.00';
+      document.getElementById('receiptAmount').textContent = `PHP ${parseFloat(formattedAmount).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      
+      const now = new Date();
+      const timeStr = now.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) + ' ' +
+                     now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+      document.getElementById('receiptTime').textContent = timeStr;
+      
+      const refId = 'RCP-' + Math.floor(Math.random() * 999999).toString().padStart(6, '0');
+      document.getElementById('receiptRefId').textContent = refId;
+    }
+
+    // Initialize receipt with default values
+    updateReceiptDisplay('Last Transaction', {{ balance }});
+
+    // Download Receipt Button
+    document.getElementById('downloadReceiptBtn').addEventListener('click', () => {
+      const type = document.getElementById('receiptType').textContent;
+      const amount = document.getElementById('receiptAmount').textContent;
+      const time = document.getElementById('receiptTime').textContent;
+      const refId = document.getElementById('receiptRefId').textContent;
+      const account = '{{ account_number[:4] }}...{{ account_number[-4:] }}';
+      
+      const receiptContent = `
+PEV BANKING - TRANSACTION RECEIPT
+================================
+Date: ${new Date().toLocaleDateString('en-US')}
+Time: ${new Date().toLocaleTimeString('en-US')}
+
+TRANSACTION DETAILS
+-------------------
+Type: ${type}
+Amount: ${amount}
+Reference ID: ${refId}
+Account: ${account}
+Time: ${time}
+Status: ✓ Completed Successfully
+
+Thank you for using PEV Banking!
+================================
+      `;
+
+      const blob = new Blob([receiptContent], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `receipt_${refId}_${Date.now()}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      showToast('Receipt downloaded successfully!');
     });
   </script>
 </body>
