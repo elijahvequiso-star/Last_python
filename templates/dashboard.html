@@ -308,8 +308,31 @@
 
     .bottom-grid {
       display: grid;
-      grid-template-columns: 1.1fr 1.1fr 0.8fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 18px;
+    }
+
+    .bottom-grid > article {
+      position: relative;
+    }
+
+    .bottom-grid .panel-side-label {
+      position: absolute;
+      left: -1.6rem;
+      top: 24px;
+      transform: rotate(-90deg);
+      transform-origin: left top;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      opacity: 0.75;
+    }
+
+    .bottom-grid .receipt-panel,
+    .bottom-grid .panel {
+      padding-left: 3.5rem;
     }
 
     .panel-head {
@@ -318,7 +341,7 @@
       justify-content: space-between;
       gap: 12px;
       margin-bottom: 18px;
-    }
+    
 
     .panel-title { font-size: 1rem; font-weight: 800; }
 
@@ -376,6 +399,11 @@
       border-color: #bfd4ff;
       background: #f1f7ff;
       transform: translateY(-1px);
+    }
+
+    .transaction-item.active {
+      border-color: #2563eb;
+      background: #eef5ff;
     }
 
     .account-top,
@@ -1139,7 +1167,7 @@
             <div class="transaction-list">
               {% if transactions %}
                 {% for t in transactions|reverse %}
-                <div class="transaction-item">
+                <div class="transaction-item" data-type="{{ t.type.title() }}" data-amount="{{ '%.2f'|format(t.amount|abs) }}" data-timestamp="{{ t.timestamp }}" data-recipient="{% if t.recipient %}{{ t.recipient }}{% else %}Account activity{% endif %}" data-reference="{{ t.id }}">
                   <div class="txn-icon {% if t.amount > 0 %}green{% elif t.type.lower() == 'withdrawal' %}red{% else %}purple{% endif %}">
                     <i class="fas {% if t.type.lower() in ['deposit', 'received'] %}fa-arrow-down{% elif t.type.lower() == 'withdrawal' %}fa-arrow-up{% else %}fa-paper-plane{% endif %}"></i>
                   </div>
@@ -1194,6 +1222,7 @@
 
         <div class="bottom-grid">
           <article class="panel">
+            <span class="panel-side-label">Spending Overview</span>
             <div class="panel-head">
               <h2 class="panel-title">Spending Overview</h2>
             </div>
@@ -1209,6 +1238,7 @@
           </article>
 
           <article class="receipt-panel">
+            <span class="panel-side-label">Transaction Receipt</span>
             <div class="receipt-header">
               <i class="fas fa-receipt"></i>
               <h2>Transaction Receipt</h2>
@@ -1245,6 +1275,11 @@
                   <span class="receipt-label">Reference ID</span>
                   <span class="receipt-value receipt-ref-id" id="receiptRefId">RCP-000000</span>
                 </div>
+              </div>
+
+              <div class="receipt-section">
+                <span class="receipt-label">Recipient / Sender</span>
+                <span class="receipt-value" id="receiptRecipient">N/A</span>
               </div>
 
               <div class="receipt-divider-subtle"></div>
@@ -1816,22 +1851,43 @@ document.querySelectorAll('.account-item').forEach((item) => {
     });
 
     // Receipt Panel Functionality
-    function updateReceiptDisplay(type, amount) {
+    function formatCurrency(value) {
+      const num = Number(value) || 0;
+      return 'PHP ' + num.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function updateReceiptDisplay(type, amount, timestamp, recipient, reference) {
       document.getElementById('receiptType').textContent = type || 'Transaction';
-      const formattedAmount = typeof amount === 'number' ? amount.toFixed(2) : '0.00';
-      document.getElementById('receiptAmount').textContent = `PHP ${parseFloat(formattedAmount).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      
-      const now = new Date();
-      const timeStr = now.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) + ' ' +
-                     now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-      document.getElementById('receiptTime').textContent = timeStr;
-      
-      const refId = 'RCP-' + Math.floor(Math.random() * 999999).toString().padStart(6, '0');
-      document.getElementById('receiptRefId').textContent = refId;
+      document.getElementById('receiptAmount').textContent = formatCurrency(amount);
+      document.getElementById('receiptTime').textContent = timestamp || new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) + ' ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+      document.getElementById('receiptRecipient').textContent = recipient || 'N/A';
+      document.getElementById('receiptRefId').textContent = reference || 'RCP-' + Math.floor(Math.random() * 999999).toString().padStart(6, '0');
+    }
+
+    const transactionItems = document.querySelectorAll('.transaction-item');
+    if (transactionItems.length) {
+      transactionItems.forEach((item, index) => {
+        item.addEventListener('click', () => {
+          document.querySelectorAll('.transaction-item.active').forEach(active => active.classList.remove('active'));
+          item.classList.add('active');
+          updateReceiptDisplay(
+            item.dataset.type,
+            item.dataset.amount,
+            item.dataset.timestamp,
+            item.dataset.recipient,
+            item.dataset.reference
+          );
+        });
+        if (index === 0) {
+          item.click();
+        }
+      });
+    } else {
+      updateReceiptDisplay('No Activity', 0, '', 'N/A', 'RCP-000000');
     }
 
     // Initialize receipt with default values
-    updateReceiptDisplay('Last Transaction', {{ balance }});
+    updateReceiptDisplay('Last Transaction', {{ balance }}, '', 'N/A', 'RCP-000000');
 
     // Download Receipt Button
     document.getElementById('downloadReceiptBtn').addEventListener('click', () => {
@@ -1839,32 +1895,16 @@ document.querySelectorAll('.account-item').forEach((item) => {
       const amount = document.getElementById('receiptAmount').textContent;
       const time = document.getElementById('receiptTime').textContent;
       const refId = document.getElementById('receiptRefId').textContent;
+      const recipient = document.getElementById('receiptRecipient').textContent;
       const account = '{{ account_number[:4] }}...{{ account_number[-4:] }}';
       
-      const receiptContent = `
-PEV BANKING - TRANSACTION RECEIPT
-================================
-Date: ${new Date().toLocaleDateString('en-US')}
-Time: ${new Date().toLocaleTimeString('en-US')}
-
-TRANSACTION DETAILS
--------------------
-Type: ${type}
-Amount: ${amount}
-Reference ID: ${refId}
-Account: ${account}
-Time: ${time}
-Status: ✓ Completed Successfully
-
-Thank you for using PEV Banking!
-================================
-      `;
+      const receiptContent = `PEV BANKING - TRANSACTION RECEIPT\n================================\nDate & Time: ${time}\n\nTRANSACTION DETAILS\n-------------------\nType: ${type}\nAmount: ${amount}\nRecipient/Sender: ${recipient}\nReference ID: ${refId}\nAccount: ${account}\nStatus: Completed Successfully\n\nThank you for using PEV Banking!\n`;
 
       const blob = new Blob([receiptContent], { type: 'text/plain' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `receipt_${refId}_${Date.now()}.txt`;
+      a.download = `receipt_${refId.replace(/[^A-Za-z0-9]/g, '')}_${Date.now()}.txt`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
