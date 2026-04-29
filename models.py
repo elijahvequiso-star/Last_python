@@ -79,6 +79,9 @@ class User:
     def check_password(self, password):
         return self.password_hash == hashlib.sha256(password.encode()).hexdigest()
 
+    def _hash_password(self, password):
+        return hashlib.sha256(password.encode()).hexdigest()
+
     def to_dict(self):
         return {
             'full_name': self.full_name,
