@@ -16,7 +16,7 @@ try:
 except ImportError:
     from models import BankingSystem
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / '.env')
 
 BREVO_API_KEY = (

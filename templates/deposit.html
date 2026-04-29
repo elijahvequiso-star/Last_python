@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deposit — PEV Banking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='txn-pages.css') }}" rel="stylesheet">
+</head>
+<body class="txn-body">
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+        <span style="color:#fbbf24;font-weight:900;">PEV</span><span style="color:#fff;font-weight:700;"> Banking</span>
+      </div>
+    <ul class="nav-list">
+      <li><a href="{{ url_for('dashboard') }}" class="nav-btn"><i class="fas fa-chart-pie"></i><span>Dashboard</span></a></li>
+      <li><a href="{{ url_for('deposit') }}"  class="nav-btn active"><i class="fas fa-arrow-down-to-line"></i><span>Deposit</span></a></li>
+      <li><a href="{{ url_for('withdraw') }}" class="nav-btn"><i class="fas fa-arrow-up-from-line"></i><span>Withdraw</span></a></li>
+      <li><a href="{{ url_for('send') }}"     class="nav-btn"><i class="fas fa-paper-plane"></i><span>Send Money</span></a></li>
+    </ul>
+    <div class="logout-wrap">
+      <a href="{{ url_for('logout') }}" class="nav-btn logout-btn"><i class="fas fa-right-from-bracket"></i><span>Logout</span></a>
+    </div>
+  </aside>
+
+  <main class="txn-main">
+    <!-- Topbar -->
+    <div class="txn-topbar">
+      <div class="txn-topbar-left">
+        <a href="{{ url_for('dashboard') }}" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <div>
+          <p class="topbar-sub">Deposit Funds</p>
+          <h1 class="topbar-title">{{ full_name }}</h1>
+        </div>
+      </div>
+      <div class="topbar-balances">
+        <div class="topbar-bal-item">
+          <span class="topbar-bal-label">Savings</span>
+          <span class="topbar-bal-val" id="liveSavings">PHP {{ "%.2f"|format(savings_balance) }}</span>
+        </div>
+        <div class="topbar-bal-divider"></div>
+        <div class="topbar-bal-item">
+          <span class="topbar-bal-label">Current</span>
+          <span class="topbar-bal-val" id="liveCurrent">PHP {{ "%.2f"|format(current_balance) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card -->
+    <div class="txn-card">
+      <div class="txn-card-header">
+        <div class="txn-hero-icon txn-hero-icon--green">
+          <div class="txn-hero-icon-ring"></div>
+          <i class="fas fa-vault"></i>
+          <span class="txn-hero-icon-badge"><i class="fas fa-arrow-down"></i></span>
+        </div>
+        <div>
+          <h2 class="txn-card-title">Deposit Money</h2>
+          <p class="txn-card-sub">Choose account and enter amount</p>
+        </div>
+      </div>
+
+      <div class="txn-card-body">
+
+        <!-- Account type selector -->
+        <div class="field-group">
+          <label class="field-label">Deposit To</label>
+          <div class="account-selector">
+            <button class="acc-opt acc-opt--active" data-type="savings" type="button">
+              <div class="acc-opt-icon" style="background:#dcfce7;color:#16a34a;"><i class="fas fa-piggy-bank"></i></div>
+              <div class="acc-opt-info">
+                <span class="acc-opt-name">Savings Account</span>
+                <span class="acc-opt-bal" id="savingsOptBal">PHP {{ "%.2f"|format(savings_balance) }}</span>
+              </div>
+              <div class="acc-opt-check"><i class="fas fa-check"></i></div>
+            </button>
+            <button class="acc-opt" data-type="current" type="button">
+              <div class="acc-opt-icon" style="background:#ede9fe;color:#7c3aed;"><i class="fas fa-building-columns"></i></div>
+              <div class="acc-opt-info">
+                <span class="acc-opt-name">Current Account</span>
+                <span class="acc-opt-bal" id="currentOptBal">PHP {{ "%.2f"|format(current_balance) }}</span>
+              </div>
+              <div class="acc-opt-check"><i class="fas fa-check"></i></div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Amount -->
+        <div class="field-group">
+          <label class="field-label">Amount</label>
+          <div class="amount-wrap">
+            <span class="amount-prefix">PHP</span>
+            <input type="number" id="txnAmount" class="amount-input" placeholder="0.00" min="0.01" step="0.01" autocomplete="off">
+          </div>
+          <div class="chip-row">
+            <button class="chip" data-val="50" type="button">+₱50</button>
+            <button class="chip" data-val="100" type="button">+₱100</button>
+            <button class="chip" data-val="250" type="button">+₱250</button>
+            <button class="chip" data-val="500" type="button">+₱500</button>
+            <button class="chip" data-val="1000" type="button">+₱1,000</button>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="txn-summary" id="txnSummary" style="display:none;">
+          <div class="summary-row"><span>Depositing to</span><span id="summaryAccType">Savings Account</span></div>
+          <div class="summary-row"><span>Amount</span><span id="summaryAmt">PHP 0.00</span></div>
+          <div class="summary-row"><span>Fee</span><span class="free-tag">Free</span></div>
+          <div class="summary-row summary-total"><span>Total Credited</span><span id="summaryTotal">PHP 0.00</span></div>
+        </div>
+
+        <button class="txn-cta green-cta" id="txnBtn" type="button">
+          <span class="cta-text"><i class="fas fa-arrow-down-to-line"></i> Confirm Deposit</span>
+          <span class="cta-loader" style="display:none;"><i class="fas fa-spinner fa-spin"></i> Processing…</span>
+        </button>
+        <p class="txn-error" id="txnError" style="display:none;"></p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  let selectedType = 'savings';
+  const input = document.getElementById('txnAmount');
+  const summary = document.getElementById('txnSummary');
+  const summaryAmt = document.getElementById('summaryAmt');
+  const summaryTotal = document.getElementById('summaryTotal');
+  const summaryAccType = document.getElementById('summaryAccType');
+
+  document.querySelectorAll('.acc-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.acc-opt').forEach(b => b.classList.remove('acc-opt--active'));
+      btn.classList.add('acc-opt--active');
+      selectedType = btn.dataset.type;
+      summaryAccType.textContent = selectedType === 'savings' ? 'Savings Account' : 'Current Account';
+      updateSummary();
+    });
+  });
+
+  document.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('.chip').forEach(x => x.classList.remove('chip--active'));
+      c.classList.add('chip--active');
+      const cur = parseFloat(input.value) || 0;
+      input.value = (cur + parseFloat(c.dataset.val)).toFixed(2);
+      updateSummary();
+    });
+  });
+
+  input.addEventListener('input', updateSummary);
+
+  function updateSummary() {
+    const v = parseFloat(input.value);
+    if (v > 0) {
+      summaryAmt.textContent = 'PHP ' + v.toFixed(2);
+      summaryTotal.textContent = 'PHP ' + v.toFixed(2);
+      summary.style.display = 'flex';
+    } else {
+      summary.style.display = 'none';
+    }
+  }
+
+  document.getElementById('txnBtn').addEventListener('click', () => {
+    const amount = parseFloat(input.value);
+    const errEl = document.getElementById('txnError');
+    if (!amount || amount <= 0) { errEl.textContent = 'Enter a valid amount.'; errEl.style.display = 'block'; return; }
+    errEl.style.display = 'none';
+    const btn = document.getElementById('txnBtn');
+    btn.querySelector('.cta-text').style.display = 'none';
+    btn.querySelector('.cta-loader').style.display = 'inline-flex';
+    btn.disabled = true;
+    fetch('/api/deposit', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({amount, account_type: selectedType})
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) {
+        showToast('Deposit successful!');
+        document.getElementById('liveSavings').textContent = 'PHP ' + d.savings_balance.toFixed(2);
+        document.getElementById('liveCurrent').textContent = 'PHP ' + d.current_balance.toFixed(2);
+        document.getElementById('savingsOptBal').textContent = 'PHP ' + d.savings_balance.toFixed(2);
+        document.getElementById('currentOptBal').textContent = 'PHP ' + d.current_balance.toFixed(2);
+        input.value = '';
+        document.querySelectorAll('.chip').forEach(x => x.classList.remove('chip--active'));
+        summary.style.display = 'none';
+        setTimeout(() => window.location.href = '/dashboard', 1400);
+      } else {
+        errEl.textContent = d.message || 'Deposit failed.'; errEl.style.display = 'block';
+      }
+      btn.querySelector('.cta-text').style.display = 'inline-flex';
+      btn.querySelector('.cta-loader').style.display = 'none';
+      btn.disabled = false;
+    })
+    .catch(() => { errEl.textContent = 'Network error.'; errEl.style.display = 'block'; btn.querySelector('.cta-text').style.display = 'inline-flex'; btn.querySelector('.cta-loader').style.display = 'none'; btn.disabled = false; });
+  });
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2400);
+  }
+})();
+</script>
+</body>
+</html>

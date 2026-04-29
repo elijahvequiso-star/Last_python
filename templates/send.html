@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Send Money — PEV Banking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='txn-pages.css') }}" rel="stylesheet">
+</head>
+<body class="txn-body">
+<div class="app-shell">
+
+  <aside class="sidebar">
+    <div class="logo">PEV<span>.</span></div>
+    <ul class="nav-list">
+      <li><a href="{{ url_for('dashboard') }}" class="nav-btn"><i class="fas fa-chart-pie"></i><span>Dashboard</span></a></li>
+      <li><a href="{{ url_for('deposit') }}"  class="nav-btn"><i class="fas fa-arrow-down-to-line"></i><span>Deposit</span></a></li>
+      <li><a href="{{ url_for('withdraw') }}" class="nav-btn"><i class="fas fa-arrow-up-from-line"></i><span>Withdraw</span></a></li>
+      <li><a href="{{ url_for('send') }}"     class="nav-btn active"><i class="fas fa-paper-plane"></i><span>Send Money</span></a></li>
+    </ul>
+    <div class="logout-wrap">
+      <a href="{{ url_for('logout') }}" class="nav-btn logout-btn"><i class="fas fa-right-from-bracket"></i><span>Logout</span></a>
+    </div>
+  </aside>
+
+  <main class="txn-main">
+    <div class="txn-topbar">
+      <div class="txn-topbar-left">
+        <a href="{{ url_for('dashboard') }}" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <div>
+          <p class="topbar-sub">Send Money</p>
+          <h1 class="topbar-title">{{ full_name }}</h1>
+        </div>
+      </div>
+      <div class="topbar-balances">
+        <div class="topbar-bal-item">
+          <span class="topbar-bal-label">Savings (Available)</span>
+          <span class="topbar-bal-val" id="liveSavings">PHP {{ "%.2f"|format(savings_balance) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="txn-card">
+      <div class="txn-card-header">
+        <div class="txn-card-icon-wrap purple-icon"><i class="fas fa-paper-plane"></i></div>
+        <div>
+          <h2 class="txn-card-title">Send Money</h2>
+          <p class="txn-card-sub">Transfer instantly to any PEV account</p>
+        </div>
+      </div>
+
+      <div class="txn-card-body">
+
+        <div class="field-group">
+          <label class="field-label">Recipient Mobile Number</label>
+          <div class="text-input-wrap">
+            <span class="text-input-icon"><i class="fas fa-mobile-screen"></i></span>
+            <input type="text" id="txnRecipient" class="text-input" placeholder="09XX XXX XXXX" autocomplete="off">
+          </div>
+          <p class="field-hint">Enter the recipient's registered PEV mobile number</p>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Amount</label>
+          <div class="amount-wrap">
+            <span class="amount-prefix">PHP</span>
+            <input type="number" id="txnAmount" class="amount-input" placeholder="0.00" min="0.01" step="0.01" autocomplete="off">
+          </div>
+          <div class="chip-row">
+            <button class="chip" data-val="50" type="button">₱50</button>
+            <button class="chip" data-val="100" type="button">₱100</button>
+            <button class="chip" data-val="250" type="button">₱250</button>
+            <button class="chip" data-val="500" type="button">₱500</button>
+            <button class="chip" data-val="1000" type="button">₱1,000</button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Note <span style="font-weight:400;color:#94a3b8;">(optional)</span></label>
+          <div class="text-input-wrap">
+            <span class="text-input-icon"><i class="fas fa-pen-to-square"></i></span>
+            <input type="text" id="txnNote" class="text-input" placeholder="What's this for?" maxlength="60">
+          </div>
+        </div>
+
+        <div class="txn-summary" id="txnSummary" style="display:none;">
+          <div class="summary-row"><span>Sending to</span><span id="summaryRecipient" style="color:#2563eb;font-weight:700;">—</span></div>
+          <div class="summary-row"><span>Amount</span><span id="summaryAmt">PHP 0.00</span></div>
+          <div class="summary-row"><span>Transfer fee</span><span class="free-tag">Free</span></div>
+          <div class="summary-row summary-total"><span>Total Debited</span><span id="summaryTotal">PHP 0.00</span></div>
+        </div>
+
+        <!-- Receipt box (shown after success) -->
+        <div class="receipt-box" id="receiptBox" style="display:none;">
+          <div class="receipt-header"><i class="fas fa-circle-check"></i> Transfer Successful</div>
+          <div class="receipt-body" id="receiptBody"></div>
+          <button class="txn-cta purple-cta" style="margin-top:16px;" onclick="window.location.href='/dashboard'" type="button">
+            <span class="cta-text"><i class="fas fa-house"></i> Back to Dashboard</span>
+          </button>
+        </div>
+
+        <button class="txn-cta purple-cta" id="txnBtn" type="button">
+          <span class="cta-text"><i class="fas fa-paper-plane"></i> Send Money</span>
+          <span class="cta-loader" style="display:none;"><i class="fas fa-spinner fa-spin"></i> Processing…</span>
+        </button>
+        <p class="txn-error" id="txnError" style="display:none;"></p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const amtInput = document.getElementById('txnAmount');
+  const recInput = document.getElementById('txnRecipient');
+  const summary  = document.getElementById('txnSummary');
+  const summaryAmt = document.getElementById('summaryAmt');
+  const summaryTotal = document.getElementById('summaryTotal');
+  const summaryRec = document.getElementById('summaryRecipient');
+
+  amtInput.addEventListener('input', updateSummary);
+  recInput.addEventListener('input', updateSummary);
+
+  document.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('.chip').forEach(x => x.classList.remove('chip--active'));
+      c.classList.add('chip--active');
+      amtInput.value = parseFloat(c.dataset.val).toFixed(2);
+      updateSummary();
+    });
+  });
+
+  function updateSummary() {
+    const v = parseFloat(amtInput.value);
+    const r = recInput.value.trim();
+    if (v > 0 && r) {
+      summaryAmt.textContent = 'PHP ' + v.toFixed(2);
+      summaryTotal.textContent = 'PHP ' + v.toFixed(2);
+      summaryRec.textContent = r;
+      summary.style.display = 'flex';
+    } else { summary.style.display = 'none'; }
+  }
+
+  document.getElementById('txnBtn').addEventListener('click', () => {
+    const amount    = parseFloat(amtInput.value);
+    const recipient = recInput.value.trim();
+    const note      = document.getElementById('txnNote').value.trim();
+    const errEl     = document.getElementById('txnError');
+    if (!recipient) { errEl.textContent = 'Enter recipient mobile number.'; errEl.style.display = 'block'; return; }
+    if (!amount || amount <= 0) { errEl.textContent = 'Enter a valid amount.'; errEl.style.display = 'block'; return; }
+    errEl.style.display = 'none';
+    const btn = document.getElementById('txnBtn');
+    btn.querySelector('.cta-text').style.display = 'none';
+    btn.querySelector('.cta-loader').style.display = 'inline-flex';
+    btn.disabled = true;
+    fetch('/api/send', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({amount, recipient, note})
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success && d.receipt) {
+        const rc = d.receipt;
+        document.getElementById('liveSavings').textContent = 'PHP ' + d.balance.toFixed(2);
+        document.getElementById('receiptBody').innerHTML = `
+          <div class="receipt-row"><span>Reference</span><strong>${rc.reference}</strong></div>
+          <div class="receipt-row"><span>From</span><strong>${rc.sender_name}</strong></div>
+          <div class="receipt-row"><span>To</span><strong>${rc.recipient_name} (${rc.recipient_phone})</strong></div>
+          <div class="receipt-row"><span>Amount</span><strong>PHP ${rc.amount.toFixed(2)}</strong></div>
+          ${rc.note ? `<div class="receipt-row"><span>Note</span><strong>${rc.note}</strong></div>` : ''}
+          <div class="receipt-row"><span>Date</span><strong>${rc.timestamp}</strong></div>
+        `;
+        btn.style.display = 'none';
+        summary.style.display = 'none';
+        document.getElementById('receiptBox').style.display = 'block';
+        showToast('Money sent successfully!');
+      } else {
+        errEl.textContent = d.message || 'Transfer failed.'; errEl.style.display = 'block';
+        btn.querySelector('.cta-text').style.display = 'inline-flex';
+        btn.querySelector('.cta-loader').style.display = 'none';
+        btn.disabled = false;
+      }
+    })
+    .catch(() => { errEl.textContent = 'Network error.'; errEl.style.display = 'block'; btn.querySelector('.cta-text').style.display = 'inline-flex'; btn.querySelector('.cta-loader').style.display = 'none'; btn.disabled = false; });
+  });
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2400);
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - PEV Banking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-soft: #dbeafe;
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --surface-soft: #f8fbff;
+      --sidebar: #0f172a;
+      --sidebar-2: #111c38;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --green: #16a34a;
+      --green-soft: #dcfce7;
+      --purple: #7c3aed;
+      --purple-soft: #ede9fe;
+      --orange: #ea580c;
+      --orange-soft: #ffedd5;
+      --red: #dc2626;
+      --red-soft: #fee2e2;
+      --shadow: 0 12px 34px rgba(15, 23, 42, 0.08);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    button, input, select { font: inherit; }
+
+    .app-shell {
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 270px;
+      position: fixed;
+      inset: 0 auto 0 0;
+      background: linear-gradient(180deg, var(--sidebar) 0%, var(--sidebar-2) 100%);
+      color: #fff;
+      padding: 28px 18px;
+      display: flex;
+      flex-direction: column;
+      z-index: 30;
+      box-shadow: 16px 0 40px rgba(15, 23, 42, 0.12);
+    }
+
+    .logo {
+      font-size: 1.9rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      padding: 0 12px 24px;
+    }
+
+    .logo span { color: #fbbf24; }
+
+    .nav-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .nav-btn,
+    .logout-btn {
+      width: 100%;
+      border: none;
+      background: transparent;
+      color: #b8c2d8;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 14px;
+      border-radius: 14px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s ease;
+      text-align: left;
+    }
+
+    .nav-btn i,
+    .logout-btn i { width: 18px; text-align: center; }
+
+    .nav-btn:hover,
+    .logout-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateX(3px);
+    }
+
+    .nav-btn.active {
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.26), rgba(59, 130, 246, 0.12));
+      color: #fff;
+      box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.22);
+    }
+
+    .logout-wrap { margin-top: auto; padding-top: 20px; }
+
+    .main {
+      flex: 1;
+      margin-left: 270px;
+      padding: 28px;
+    }
+
+    .header {
+      position: relative;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 20px;
+      padding: 20px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header h1 { font-size: 1.35rem; font-weight: 800; }
+    .header p { margin-top: 4px; color: var(--muted); font-size: 0.92rem; }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: relative;
+    }
+
+    .notify {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      display: grid;
+      place-items: center;
+      position: relative;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .notify-badge {
+      position: absolute;
+      top: 9px;
+      right: 10px;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 0 2px #fff;
+    }
+
+    .avatar {
+      width: 46px;
+      height: 46px;
+      min-width: 46px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 1rem;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 2.5px solid #fff;
+      outline: 2px solid rgba(37,99,235,0.25);
+    }
+
+    .popover {
+      position: absolute;
+      top: calc(100% + 12px);
+      right: 0;
+      width: 320px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+      padding: 16px;
+      display: none;
+      z-index: 20;
+    }
+
+    .popover.open { display: block; }
+    .popover-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .popover-head h3 { font-size: 0.95rem; font-weight: 800; }
+    .popover-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .popover-item {
+      border: 1px solid #edf2f7;
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: var(--surface-soft);
+    }
+
+    .popover-item strong {
+      display: block;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+    }
+
+    .popover-item p {
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.5;
+    }
+
+    .page-section {
+      display: none;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .page-section.active { display: flex; }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .balance-card,
+    .panel,
+    .table-panel,
+    .module-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid rgba(226, 232, 240, 0.82);
+      box-shadow: var(--shadow);
+      transition: 0.2s ease;
+    }
+
+    .balance-card,
+    .panel,
+    .module-card { padding: 20px; }
+
+    .balance-card:hover,
+    .panel:hover,
+    .table-panel:hover,
+    .module-card:hover { transform: translateY(-2px); }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .card-icon,
+    .module-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 1rem;
+    }
+
+    .blue { background: var(--primary-soft); color: var(--primary); }
+    .green { background: var(--green-soft); color: var(--green); }
+    .purple { background: var(--purple-soft); color: var(--purple); }
+    .orange { background: var(--orange-soft); color: var(--orange); }
+    .red { background: var(--red-soft); color: var(--red); }
+
+    .eye-toggle {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .balance-label { color: var(--muted); font-size: 0.84rem; font-weight: 600; margin-bottom: 8px; }
+    .balance-amount { font-size: 1.55rem; font-weight: 800; letter-spacing: -0.03em; }
+    .balance-sub { margin-top: 8px; font-size: 0.8rem; color: var(--muted); }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1.2fr 0.9fr;
+      gap: 18px;
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1.1fr 0.8fr;
+      gap: 18px;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .panel-title { font-size: 1rem; font-weight: 800; }
+
+    .panel-link,
+    .text-btn {
+      color: var(--primary);
+      font-size: 0.84rem;
+      font-weight: 700;
+      text-decoration: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .account-list,
+    .transaction-list,
+    .alerts-list,
+    .module-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .account-item,
+    .transaction-item,
+    .alert-item,
+    .module-item {
+      background: var(--surface-soft);
+      border: 1px solid #edf2f7;
+      border-radius: 14px;
+      padding: 14px 15px;
+      transition: 0.2s ease;
+    }
+
+    .account-item,
+    .quick-action,
+    .module-action,
+    .alert-dismiss,
+    .security-btn,
+    .table-row-btn {
+      cursor: pointer;
+    }
+
+    .account-item.active {
+      border-color: #94bfff;
+      background: #eef5ff;
+    }
+
+    .account-item:hover,
+    .transaction-item:hover,
+    .quick-action:hover,
+    .alert-item:hover,
+    .module-item:hover,
+    .table-row-btn:hover {
+      border-color: #bfd4ff;
+      background: #f1f7ff;
+      transform: translateY(-1px);
+    }
+
+    .account-top,
+    .transaction-top,
+    .alert-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .account-name,
+    .transaction-name,
+    .alert-title,
+    .module-item strong {
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .account-number,
+    .account-meta,
+    .transaction-meta,
+    .alert-text,
+    .module-item p,
+    .module-muted {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .status-active { background: var(--green-soft); color: var(--green); }
+    .status-review { background: #fef3c7; color: #b45309; }
+
+    .txn-icon,
+    .alert-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      font-size: 0.88rem;
+    }
+
+    .transaction-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .transaction-main { flex: 1; }
+    .transaction-amount { font-weight: 800; font-size: 0.92rem; text-align: right; }
+    .credit { color: var(--green); }
+    .debit { color: var(--red); }
+
+    .quick-grid,
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .quick-action,
+    .module-action,
+    .table-row-btn {
+      border: 1px solid #ebf1f8;
+      background: linear-gradient(180deg, #ffffff, #f8fbff);
+      border-radius: 16px;
+      padding: 18px 12px;
+      text-align: center;
+      transition: 0.18s ease;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.04);
+    }
+
+    .quick-action i,
+    .module-action i {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 10px;
+      font-size: 1rem;
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    .quick-action span,
+    .module-action span {
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--text);
+      display: block;
+    }
+
+    .clicked { transform: scale(0.97); }
+
+    .donut-wrap {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .donut-chart {
+      width: 190px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: conic-gradient(#2563eb 0 38%, #16a34a 38% 62%, #7c3aed 62% 84%, #ea580c 84% 100%);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .donut-chart::after {
+      content: "Spend";
+      position: absolute;
+      inset: 24px;
+      border-radius: 50%;
+      background: #fff;
+      display: grid;
+      place-items: center;
+      color: var(--text);
+      font-weight: 800;
+      font-size: 1rem;
+      box-shadow: inset 0 0 0 1px #eef2f7;
+    }
+
+    .legend {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.86rem;
+      color: var(--muted);
+    }
+
+    .legend-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .dot { width: 11px; height: 11px; border-radius: 50%; }
+
+    .security-card {
+      background: linear-gradient(135deg, #0f172a, #1d4ed8);
+      color: #fff;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .security-card::before {
+      content: "";
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      top: -70px;
+      right: -60px;
+    }
+
+    .security-card p {
+      margin: 10px 0 18px;
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 0.86rem;
+      line-height: 1.6;
+      position: relative;
+    }
+
+    .security-btn {
+      border: none;
+      background: #fff;
+      color: var(--primary);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 800;
+      transition: 0.2s ease;
+      position: relative;
+    }
+
+    .security-btn.enabled {
+      background: #bbf7d0;
+      color: #166534;
+    }
+
+    .table-panel { padding: 0; overflow: hidden; }
+
+    .table-head {
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .txn-table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    th, td {
+      padding: 16px 20px;
+      border-bottom: 1px solid #eef2f7;
+      text-align: left;
+      font-size: 0.86rem;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 0.73rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: #fbfdff;
+    }
+
+    tbody tr:hover td { background: #f8fbff; }
+
+    .table-type {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+    }
+
+    .table-row-btn {
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      background: #eff6ff;
+      color: var(--primary);
+      box-shadow: none;
+    }
+
+    .module-layout {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+    }
+
+    .module-card h2 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .module-card p {
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.6;
+    }
+
+    .module-stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      border: 1px solid #edf2f7;
+      background: var(--surface-soft);
+      border-radius: 14px;
+    }
+
+    .module-stat strong { font-size: 0.95rem; }
+
+    .hidden-balance { letter-spacing: 0.18em; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 60;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      width: min(840px, 100%);
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 30px 60px rgba(15, 23, 42, 0.18);
+      overflow: hidden;
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .modal-head h3 { font-size: 1rem; font-weight: 800; }
+    .modal-close {
+      border: none;
+      background: #f8fafc;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      cursor: pointer;
+      color: var(--muted);
+    }
+
+    .modal-body {
+      max-height: 70vh;
+      overflow: auto;
+      padding: 18px 22px 22px;
+    }
+
+    .receipt-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      background: #0f172a;
+      color: #fff;
+      padding: 13px 16px;
+      border-radius: 14px;
+      box-shadow: 0 18px 34px rgba(15, 23, 42, 0.18);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
+      transition: 0.2s ease;
+      z-index: 80;
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 1280px) {
+      .cards-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .content-grid, .bottom-grid, .module-layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 920px) {
+      .sidebar { transform: translateX(-100%); transition: 0.25s ease; }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; padding: 18px; }
+      .mobile-menu {
+        display: inline-grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--text);
+        cursor: pointer;
+      }
+      .header { padding: 16px; }
+    }
+
+    @media (max-width: 640px) {
+      .cards-grid { grid-template-columns: 1fr; }
+      .header { flex-direction: column; align-items: stretch; }
+      .header-right { justify-content: space-between; }
+      .quick-grid, .module-grid { grid-template-columns: 1fr 1fr; }
+      .donut-wrap { justify-content: center; }
+      .popover { width: min(320px, calc(100vw - 36px)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="logo">
+        <span style="color:#fbbf24;font-weight:900;">PEV</span><span style="color:#fff;font-weight:700;"> Banking</span>
+      </div>
+
+      <ul class="nav-list">
+        <li><button class="nav-btn active" data-section="dashboard" data-title="Welcome back, {{ full_name }}" data-subtitle="Your banking overview is updated and ready."><i class="fas fa-chart-pie"></i><span>Dashboard</span></button></li>
+        <li><button class="nav-btn" data-section="accounts" data-title="Accounts" data-subtitle="Manage your linked products and balances."><i class="fas fa-building-columns"></i><span>Accounts</span></button></li>
+        <li><button class="nav-btn" data-section="fund-transfer" data-title="Fund Transfer" data-subtitle="Send money using your verified account."><i class="fas fa-money-bill-transfer"></i><span>Fund Transfer</span></button></li>
+        <li><button class="nav-btn" data-section="profile-settings" data-title="Profile Settings" data-subtitle="Keep your contact and security details updated."><i class="fas fa-user-gear"></i><span>Profile Settings</span></button></li>
+        <li><button class="nav-btn" data-section="support" data-title="Support" data-subtitle="Find help, report issues, and request assistance."><i class="fas fa-headset"></i><span>Support</span></button></li>
+      </ul>
+
+      <div class="logout-wrap">
+        <button class="logout-btn" onclick="window.location.href='{{ url_for('logout') }}'">
+          <i class="fas fa-right-from-bracket"></i><span>Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <div>
+            <h1 id="pageHeading">Welcome back, {{ full_name }}</h1>
+            <p id="pageSubtitle">Your banking overview is updated and ready.</p>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="notify" id="notifyBtn" type="button" aria-label="Notifications">
+            <i class="fas fa-bell"></i>
+            <span class="notify-badge"></span>
+          </button>
+          <div class="avatar" id="headerAvatar" style="cursor:pointer;" onclick="document.querySelector('.nav-btn[data-section=profile-settings]').click()" title="Profile Settings">
+            {% if photo %}
+              <img src="{{ photo }}" alt="avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+            {% else %}
+              {{ full_name[0].upper() }}
+            {% endif %}
+          </div>
+
+          <div class="popover" id="notifyPopover">
+            <div class="popover-head">
+              <h3>Notifications</h3>
+              <button class="text-btn" id="markAlertsRead" type="button">Mark all read</button>
+            </div>
+            <div class="popover-list" id="notifyList">
+              <div class="popover-item">
+                <strong>Security reminder</strong>
+                <p>Keep your phone number and password protected at all times.</p>
+              </div>
+              <div class="popover-item">
+                <strong>Profile available</strong>
+                <p>Your account profile can be reviewed from Profile Settings.</p>
+              </div>
+              <div class="popover-item">
+                <strong>Transactions synced</strong>
+                <p>Your latest banking activity is reflected in the dashboard table.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section class="page-section active" id="section-dashboard">
+        <div class="cards-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));">
+          <article class="balance-card">
+            <div class="card-top">
+              <div class="card-icon blue"><i class="fas fa-wallet"></i></div>
+              <button class="eye-toggle" id="toggleBalances" type="button"><i class="fas fa-eye"></i></button>
+            </div>
+            <div class="balance-label">Total Balance</div>
+            <div class="balance-amount balance-value" data-value="{{ '%.2f'|format(balance) }}">PHP {{ "%.2f"|format(balance) }}</div>
+            <div class="balance-sub">Savings + Current combined</div>
+          </article>
+
+          <article class="balance-card">
+            <div class="card-top">
+              <div class="card-icon green"><i class="fas fa-piggy-bank"></i></div>
+            </div>
+            <div class="balance-label">Savings Account</div>
+            <div class="balance-amount balance-value" id="savingsBalanceCard" data-value="{{ '%.2f'|format(savings_balance) }}">PHP {{ "%.2f"|format(savings_balance) }}</div>
+            <div class="balance-sub">Primary savings wallet</div>
+          </article>
+
+          <article class="balance-card">
+            <div class="card-top">
+              <div class="card-icon purple"><i class="fas fa-building-columns"></i></div>
+            </div>
+            <div class="balance-label">Current Account</div>
+            <div class="balance-amount balance-value" id="currentBalanceCard" data-value="{{ '%.2f'|format(current_balance) }}">PHP {{ "%.2f"|format(current_balance) }}</div>
+            <div class="balance-sub">Daily transactions wallet</div>
+          </article>
+
+          <article class="balance-card" style="background:linear-gradient(135deg,#0f172a,#1e3a5f);color:#fff;">
+            <div class="card-top">
+              <div class="card-icon" style="background:rgba(251,191,36,.15);color:#fbbf24;"><i class="fas fa-shield-halved"></i></div>
+            </div>
+            <div class="balance-label" style="color:rgba(255,255,255,.6);">Account Status</div>
+            <div class="balance-amount" style="font-size:1.1rem;color:#4ade80;"><i class="fas fa-circle-check"></i> Active & Secured</div>
+            <div class="balance-sub" style="color:rgba(255,255,255,.5);">{{ account_number }}</div>
+          </article>
+        </div>
+
+        <div class="content-grid">
+          <article class="panel">
+            <div class="panel-head">
+              <h2 class="panel-title">Accounts Overview</h2>
+              <button class="text-btn" type="button" data-open-section="accounts">Open</button>
+            </div>
+            <div class="account-list" id="accountList">
+              <div class="account-item active" data-account="Savings Account" data-number="{{ account_number }}" data-status="Active" data-balance="PHP {{ '%.2f'|format(savings_balance) }}" data-note="Your primary account for deposits, transfers, and available funds.">
+                <div class="account-top">
+                  <div class="account-name">Savings Account</div>
+                  <div class="status-chip status-active"><i class="fas fa-circle"></i> Active</div>
+                </div>
+                <div class="account-number">{{ account_number }}</div>
+                <div class="account-meta">Available balance: PHP {{ "%.2f"|format(savings_balance) }}</div>
+              </div>
+              <div class="account-item" data-account="Current Account" data-number="{{ account_number }}" data-status="Active" data-balance="PHP {{ '%.2f'|format(current_balance) }}" data-note="Your current account for daily transactions.">
+                <div class="account-top">
+                  <div class="account-name">Current Account</div>
+                  <div class="status-chip status-active"><i class="fas fa-circle"></i> Active</div>
+                </div>
+                <div class="account-number">{{ account_number }}</div>
+                <div class="account-meta">Available balance: PHP {{ "%.2f"|format(current_balance) }}</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <h2 class="panel-title">Recent Transactions</h2>
+              <button class="panel-link" type="button" id="openTransactionsModalTop">View All</button>
+            </div>
+            <div class="transaction-list">
+              {% if transactions %}
+                {% for t in transactions|reverse %}
+                <div class="transaction-item">
+                  <div class="txn-icon {% if t.amount > 0 %}green{% elif t.type.lower() == 'withdrawal' %}red{% else %}purple{% endif %}">
+                    <i class="fas {% if t.type.lower() in ['deposit', 'received'] %}fa-arrow-down{% elif t.type.lower() == 'withdrawal' %}fa-arrow-up{% else %}fa-paper-plane{% endif %}"></i>
+                  </div>
+                  <div class="transaction-main">
+                    <div class="transaction-top">
+                      <div class="transaction-name">{{ t.type.title() }}</div>
+                      <div class="transaction-amount {% if t.amount > 0 %}credit{% else %}debit{% endif %}">
+                        {{ '+' if t.amount > 0 else '-' }}PHP {{ '%.2f'|format(t.amount|abs) }}
+                      </div>
+                    </div>
+                    <div class="transaction-meta">
+                      {% if t.recipient %}
+                        {% if t.type.lower() == 'received' %}
+                          From {{ t.recipient }}
+                        {% else %}
+                          To {{ t.recipient }}
+                        {% endif %}
+                      {% else %}
+                        Account activity update
+                      {% endif %}
+                      • {{ t.timestamp }}
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              {% else %}
+                <div class="transaction-item">
+                  <div class="txn-icon blue"><i class="fas fa-clock"></i></div>
+                  <div class="transaction-main">
+                    <div class="transaction-top">
+                      <div class="transaction-name">No transactions yet</div>
+                      <div class="transaction-amount">PHP 0.00</div>
+                    </div>
+                    <div class="transaction-meta">Your latest transactions will appear here.</div>
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <h2 class="panel-title">Quick Actions</h2>
+            </div>
+            <div class="quick-grid" style="grid-template-columns:repeat(3,1fr);">
+              <button class="quick-action" type="button" data-link="{{ url_for('deposit') }}" style="--qa-color:#16a34a;--qa-bg:#dcfce7;"><i class="fas fa-arrow-down-to-line" style="background:#dcfce7;color:#16a34a;"></i><span>Deposit</span></button>
+              <button class="quick-action" type="button" data-link="{{ url_for('withdraw') }}" style="--qa-color:#dc2626;--qa-bg:#fee2e2;"><i class="fas fa-arrow-up-from-line" style="background:#fee2e2;color:#dc2626;"></i><span>Withdraw</span></button>
+              <button class="quick-action" type="button" data-link="{{ url_for('send') }}" style="--qa-color:#7c3aed;--qa-bg:#ede9fe;"><i class="fas fa-paper-plane" style="background:#ede9fe;color:#7c3aed;"></i><span>Send Money</span></button>
+            </div>
+          </article>
+        </div>
+
+        <div class="bottom-grid">
+          <article class="panel">
+            <div class="panel-head">
+              <h2 class="panel-title">Spending Overview</h2>
+            </div>
+            <div class="donut-wrap">
+              <div class="donut-chart"></div>
+              <div class="legend">
+                <div class="legend-item"><div class="legend-left"><span class="dot" style="background:#2563eb"></span>Transfers</div><strong>38%</strong></div>
+                <div class="legend-item"><div class="legend-left"><span class="dot" style="background:#16a34a"></span>Bills & Utilities</div><strong>24%</strong></div>
+                <div class="legend-item"><div class="legend-left"><span class="dot" style="background:#7c3aed"></span>Shopping</div><strong>22%</strong></div>
+                <div class="legend-item"><div class="legend-left"><span class="dot" style="background:#ea580c"></span>Others</div><strong>16%</strong></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <h2 class="panel-title">Important Alerts</h2>
+            </div>
+            <div class="alerts-list" id="alertsList">
+              <div class="alert-item">
+                <div class="alert-top">
+                  <div style="display:flex; align-items:center; gap:12px;">
+                    <div class="alert-icon blue"><i class="fas fa-circle-info"></i></div>
+                    <div>
+                      <div class="alert-title">Account status is healthy</div>
+                      <div class="alert-text">All active accounts are monitored and operating normally.</div>
+                    </div>
+                  </div>
+                  <button class="text-btn alert-dismiss" type="button">Dismiss</button>
+                </div>
+              </div>
+
+              <div class="alert-item">
+                <div class="alert-top">
+                  <div style="display:flex; align-items:center; gap:12px;">
+                    <div class="alert-icon orange"><i class="fas fa-triangle-exclamation"></i></div>
+                    <div>
+                      <div class="alert-title">Security reminder</div>
+                      <div class="alert-text">Never share your OTP, password, or mobile verification code.</div>
+                    </div>
+                  </div>
+                  <button class="text-btn alert-dismiss" type="button">Dismiss</button>
+                </div>
+              </div>
+
+              <div class="alert-item">
+                <div class="alert-top">
+                  <div style="display:flex; align-items:center; gap:12px;">
+                    <div class="alert-icon green"><i class="fas fa-circle-check"></i></div>
+                    <div>
+                      <div class="alert-title">Profile update available</div>
+                      <div class="alert-text">Review your details to keep your account secure and complete.</div>
+                    </div>
+                  </div>
+                  <button class="text-btn alert-dismiss" type="button">Dismiss</button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel security-card">
+            <div class="panel-head" style="margin-bottom:0;">
+              <h2 class="panel-title">Security Card</h2>
+            </div>
+            <p id="securityMessage">Stay Secure, Stay Protected. Add another layer of security to your online banking profile.</p>
+            <button class="security-btn" id="securityBtn" type="button">Enable Now</button>
+          </article>
+        </div>
+
+
+      </section>
+
+      <section class="page-section" id="section-accounts">
+        <div class="module-layout">
+          <article class="module-card">
+            <h2>Selected Account Details</h2>
+            <div class="module-list">
+              <div class="module-stat"><span>Account</span><strong id="detailAccountName">Savings Account</strong></div>
+              <div class="module-stat"><span>Number</span><strong id="detailAccountNumber">{{ account_number }}</strong></div>
+              <div class="module-stat"><span>Status</span><strong id="detailAccountStatus">Active</strong></div>
+              <div class="module-stat"><span>Balance</span><strong id="detailAccountBalance">PHP {{ "%.2f"|format(savings_balance) }}</strong></div>
+            </div>
+            <p id="detailAccountNote" style="margin-top:14px;">Your primary account for deposits, transfers, and available funds.</p>
+          </article>
+
+          <article class="module-card">
+            <h2>Account Tools</h2>
+            <div class="module-grid">
+              <button class="module-action" type="button" data-link="{{ url_for('deposit') }}"><i class="fas fa-arrow-down"></i><span>Deposit</span></button>
+              <button class="module-action" type="button" data-link="{{ url_for('withdraw') }}"><i class="fas fa-arrow-up"></i><span>Withdraw</span></button>
+              <button class="module-action" type="button" data-link="{{ url_for('send') }}"><i class="fas fa-paper-plane"></i><span>Transfer</span></button>
+              <button class="module-action" type="button" data-open-section="statements"><i class="fas fa-file-lines"></i><span>Statements</span></button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="page-section" id="section-fund-transfer">
+        <div class="module-layout">
+          <article class="module-card">
+            <h2>Fund Transfer Center</h2>
+            <p>Transfer funds to another PEV account using the recipient's Philippine mobile number and generate an instant receipt.</p>
+            <div class="module-list" style="margin-top:16px;">
+              <div class="module-item"><strong>Verified Sender</strong><p>{{ full_name }} • {{ phone_number or 'Not set' }}</p></div>
+              <div class="module-item"><strong>Available Balance</strong><p>PHP {{ "%.2f"|format(balance) }}</p></div>
+              <div class="module-item"><strong>Transfer Method</strong><p>Mobile-number based receiving with proof after every successful send.</p></div>
+            </div>
+          </article>
+          <article class="module-card">
+            <h2>Transfer Actions</h2>
+            <div class="module-grid">
+              <button class="module-action" type="button" data-link="{{ url_for('send') }}"><i class="fas fa-money-bill-transfer"></i><span>Open Transfer Page</span></button>
+              <button class="module-action" type="button" data-open-modal="transactions"><i class="fas fa-receipt"></i><span>View Receipts</span></button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="page-section" id="section-bill-payments">
+        <div class="module-card">
+          <h2>Bill Payments</h2>
+          <p>Bill payment routing is available as a dashboard section now. You can keep common billers here and route future payment logic through this page.</p>
+          <div class="module-list" style="margin-top:16px;">
+            <div class="module-item"><strong>Electricity</strong><p>Set up payment templates and due-date reminders.</p></div>
+            <div class="module-item"><strong>Water</strong><p>Store bill references for faster future payments.</p></div>
+            <div class="module-item"><strong>Internet</strong><p>Central place for recurring digital service bills.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page-section" id="section-loan-details">
+        <div class="module-card">
+          <h2>Loan Details</h2>
+          <p>This module is available as a functional view with status messaging for the current project.</p>
+          <div class="module-list" style="margin-top:16px;">
+            <div class="module-item"><strong>Total Loans</strong><p>PHP 0.00</p></div>
+            <div class="module-item"><strong>Outstanding</strong><p>PHP 0.00</p></div>
+            <div class="module-item"><strong>Repayment Status</strong><p>No active loan schedule recorded.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page-section" id="section-cards">
+        <div class="module-card">
+          <h2>Cards</h2>
+          <p>Card controls are available here as an interactive placeholder section.</p>
+          <div class="module-grid" style="margin-top:16px;">
+            <button class="module-action" type="button" data-action-message="Card locking will be available once card issuance is added."><i class="fas fa-lock"></i><span>Lock Card</span></button>
+            <button class="module-action" type="button" data-action-message="Spending limits can be managed here in a future update."><i class="fas fa-sliders"></i><span>Set Limits</span></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="page-section" id="section-statements">
+        <div class="module-card">
+          <h2>Statements</h2>
+          <p>Your recent transaction history is available below and can also be opened in the modal viewer.</p>
+          <div class="module-grid" style="margin-top:16px;">
+            <button class="module-action" type="button" data-open-modal="transactions"><i class="fas fa-table-list"></i><span>Open Transactions Modal</span></button>
+            <button class="module-action" type="button" data-action-message="Statement export can be connected here later."><i class="fas fa-download"></i><span>Export Statement</span></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="page-section" id="section-profile-settings">
+        <div class="module-layout">
+          <article class="module-card">
+            <h2>Profile Information</h2>
+            <!-- Photo display -->
+            <div style="display:flex;align-items:center;gap:18px;margin-bottom:20px;">
+              <div id="profilePhotoDisplay" style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0;">
+                {% if photo %}
+                  <img src="{{ photo }}" style="width:100%;height:100%;object-fit:cover;" id="profilePhotoImg">
+                {% else %}
+                  <span id="profilePhotoInitial">{{ full_name[0].upper() }}</span>
+                {% endif %}
+              </div>
+              <div>
+                <div style="font-weight:800;font-size:1.05rem;">{{ full_name }}</div>
+                <div style="color:var(--muted);font-size:0.84rem;">{{ phone_number or 'No phone set' }}</div>
+                <div style="color:var(--muted);font-size:0.84rem;">{{ email or 'No email set' }}</div>
+              </div>
+            </div>
+            <div class="module-list">
+              <div class="module-stat"><span>Full Name</span><strong id="dispFullName">{{ full_name }}</strong></div>
+              <div class="module-stat"><span>Account Number</span><strong>{{ account_number }}</strong></div>
+              <div class="module-stat"><span>Mobile Number</span><strong id="dispPhone">{{ phone_number or 'Not set' }}</strong></div>
+              <div class="module-stat"><span>Email</span><strong id="dispEmail">{{ email or 'Not set' }}</strong></div>
+            </div>
+          </article>
+          <article class="module-card">
+            <h2>Settings Actions</h2>
+            <div class="module-grid">
+              <button class="module-action" type="button" id="openEditProfile"><i class="fas fa-user-pen"></i><span>Edit Profile</span></button>
+              <button class="module-action" type="button" id="openChangePassword"><i class="fas fa-key"></i><span>Change Password</span></button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="page-section" id="section-support">
+        <div class="module-card">
+          <h2>Support Center</h2>
+          <p>This section is now functional as a help destination inside the dashboard.</p>
+          <div class="module-list" style="margin-top:16px;">
+            <div class="module-item"><strong>Live Help</strong><p>Use this area to route chat or issue forms later.</p></div>
+            <div class="module-item"><strong>Security Concern</strong><p>Immediately change your password and contact support if you notice anything unusual.</p></div>
+            <div class="module-item"><strong>General Assistance</strong><p>Account, transfer, and profile concerns can all start here.</p></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div class="modal-backdrop" id="editProfileModal">
+    <div class="modal" style="max-width:520px;">
+      <div class="modal-head">
+        <h3><i class="fas fa-user-pen" style="color:var(--primary);margin-right:8px;"></i>Edit Profile</h3>
+        <button class="modal-close" id="closeEditProfile" type="button"><i class="fas fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <!-- Photo upload -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:24px;">
+          <div id="editPhotoPreview" style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;color:#fff;overflow:hidden;border:3px solid #dbeafe;">
+            <span id="editPhotoInitial">?</span>
+          </div>
+          <label style="cursor:pointer;background:var(--primary-soft);color:var(--primary);padding:8px 18px;border-radius:10px;font-size:0.84rem;font-weight:700;">
+            <i class="fas fa-camera"></i> Upload Photo
+            <input type="file" id="photoInput" accept="image/*" style="display:none;">
+          </label>
+          <p style="font-size:0.75rem;color:var(--muted);">JPG, PNG or GIF · Max 2MB</p>
+        </div>
+        <!-- Fields -->
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div>
+            <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">FULL NAME</label>
+            <input type="text" id="editFullName" placeholder="Your full name"
+              style="width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;font-size:0.95rem;outline:none;transition:.2s;">
+          </div>
+          <div>
+            <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">EMAIL ADDRESS</label>
+            <input type="email" id="editEmail" placeholder="you@example.com"
+              style="width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;font-size:0.95rem;outline:none;transition:.2s;">
+          </div>
+          <div>
+            <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">MOBILE NUMBER</label>
+            <input type="text" id="editPhone" placeholder="09XX XXX XXXX"
+              style="width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;font-size:0.95rem;outline:none;transition:.2s;">
+          </div>
+        </div>
+        <button id="saveProfileBtn" type="button"
+          style="margin-top:22px;width:100%;padding:14px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:14px;font-size:1rem;font-weight:800;cursor:pointer;transition:.2s;">
+          <i class="fas fa-check"></i> Save Changes
+        </button>
+        <p id="editProfileError" style="color:var(--red);font-size:0.82rem;margin-top:10px;display:none;"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div class="modal-backdrop" id="changePasswordModal">
+    <div class="modal" style="max-width:460px;">
+      <div class="modal-head">
+        <h3><i class="fas fa-key" style="color:var(--primary);margin-right:8px;"></i>Change Password</h3>
+        <button class="modal-close" id="closeChangePassword" type="button"><i class="fas fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div>
+            <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">CURRENT PASSWORD</label>
+            <input type="password" id="currentPassword" placeholder="Enter current password"
+              style="width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;font-size:0.95rem;outline:none;">
+          </div>
+          <div>
+            <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">NEW PASSWORD</label>
+            <input type="password" id="newPassword" placeholder="Min. 6 characters"
+              style="width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;font-size:0.95rem;outline:none;">
+          </div>
+          <div>
+            <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">CONFIRM NEW PASSWORD</label>
+            <input type="password" id="confirmPassword" placeholder="Repeat new password"
+              style="width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;font-size:0.95rem;outline:none;">
+          </div>
+        </div>
+        <!-- Strength bar -->
+        <div style="margin-top:12px;">
+          <div style="height:5px;border-radius:99px;background:#eef2f7;overflow:hidden;">
+            <div id="pwStrengthBar" style="height:100%;width:0%;border-radius:99px;transition:.3s;"></div>
+          </div>
+          <p id="pwStrengthLabel" style="font-size:0.75rem;color:var(--muted);margin-top:5px;"></p>
+        </div>
+        <button id="savePasswordBtn" type="button"
+          style="margin-top:22px;width:100%;padding:14px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:14px;font-size:1rem;font-weight:800;cursor:pointer;transition:.2s;">
+          <i class="fas fa-lock"></i> Update Password
+        </button>
+        <p id="changePasswordError" style="color:var(--red);font-size:0.82rem;margin-top:10px;display:none;"></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="transactionsModal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>Transaction Viewer</h3>
+        <button class="modal-close" id="closeTransactionsModal" type="button"><i class="fas fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="receipt-list">
+          {% if transactions %}
+            {% for t in transactions|reverse %}
+            <div class="module-item">
+              <strong>{{ t.type.title() }} • {{ '+' if t.amount > 0 else '-' }}PHP {{ '%.2f'|format(t.amount|abs) }}</strong>
+              <p>
+                {% if t.recipient %}
+                  {% if t.type.lower() == 'received' %}
+                    From {{ t.recipient }}
+                  {% else %}
+                    To {{ t.recipient }}
+                  {% endif %}
+                {% else %}
+                  Account activity update
+                {% endif %}
+                • {{ t.timestamp }}
+              </p>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="module-item">
+              <strong>No transactions yet</strong>
+              <p>Your transaction receipts will appear here after deposits, withdrawals, or transfers.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const navButtons = document.querySelectorAll('.nav-btn');
+    const sections = document.querySelectorAll('.page-section');
+    const pageHeading = document.getElementById('pageHeading');
+    const pageSubtitle = document.getElementById('pageSubtitle');
+    const balanceValues = document.querySelectorAll('.balance-value');
+    const toggleBalancesBtn = document.getElementById('toggleBalances');
+    const sidebar = document.getElementById('sidebar');
+    const notifyBtn = document.getElementById('notifyBtn');
+    const notifyPopover = document.getElementById('notifyPopover');
+    const toast = document.getElementById('toast');
+    const transactionsModal = document.getElementById('transactionsModal');
+    const securityBtn = document.getElementById('securityBtn');
+    const securityMessage = document.getElementById('securityMessage');
+    let balancesVisible = true;
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove('show'), 2400);
+    }
+
+    function openSection(sectionName, title, subtitle) {
+      sections.forEach((section) => {
+        section.classList.toggle('active', section.id === `section-${sectionName}`);
+      });
+      navButtons.forEach((button) => {
+        button.classList.toggle('active', button.dataset.section === sectionName);
+      });
+      if (title) pageHeading.textContent = title;
+      if (subtitle) pageSubtitle.textContent = subtitle;
+      if (window.innerWidth <= 920) sidebar.classList.remove('open');
+    }
+
+    navButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        openSection(button.dataset.section, button.dataset.title, button.dataset.subtitle);
+      });
+    });
+
+    document.querySelectorAll('[data-open-section]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const target = button.dataset.openSection;
+        const nav = document.querySelector(`.nav-btn[data-section="${target}"]`);
+        if (nav) nav.click();
+      });
+    });
+
+    toggleBalancesBtn.addEventListener('click', () => {
+      balancesVisible = !balancesVisible;
+      toggleBalancesBtn.innerHTML = balancesVisible ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+      balanceValues.forEach((item) => {
+        if (balancesVisible) {
+          item.textContent = `PHP ${item.dataset.value}`;
+          item.classList.remove('hidden-balance');
+        } else {
+          item.textContent = 'PHP ******';
+          item.classList.add('hidden-balance');
+        }
+      });
+    });
+
+    document.querySelectorAll('.quick-action, .module-action, .table-row-btn').forEach((item) => {
+      item.addEventListener('click', () => {
+        item.classList.add('clicked');
+        setTimeout(() => item.classList.remove('clicked'), 180);
+
+        if (item.dataset.actionMessage) {
+          showToast(item.dataset.actionMessage);
+        }
+
+        if (item.dataset.link) {
+          setTimeout(() => {
+            window.location.href = item.dataset.link;
+          }, 120);
+        }
+      });
+    });
+
+    notifyBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      notifyPopover.classList.toggle('open');
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!notifyPopover.contains(event.target) && !notifyBtn.contains(event.target)) {
+        notifyPopover.classList.remove('open');
+      }
+    });
+
+    document.getElementById('markAlertsRead').addEventListener('click', () => {
+      document.getElementById('notifyList').innerHTML = '<div class="popover-item"><strong>All caught up</strong><p>You have no new notifications right now.</p></div>';
+      const badge = document.querySelector('.notify-badge');
+      if (badge) badge.style.display = 'none';
+      showToast('Notifications marked as read.');
+    });
+
+document.querySelectorAll('.account-item').forEach((item) => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.account-item').forEach((card) => card.classList.remove('active'));
+        item.classList.add('active');
+        document.getElementById('detailAccountName').textContent = item.dataset.account;
+        document.getElementById('detailAccountNumber').textContent = item.dataset.number;
+        document.getElementById('detailAccountStatus').textContent = item.dataset.status;
+        document.getElementById('detailAccountBalance').textContent = item.dataset.balance;
+        document.getElementById('detailAccountNote').textContent = item.dataset.note;
+        showToast(`${item.dataset.account} selected.`);
+      });
+    });
+
+    document.querySelectorAll('.alert-dismiss').forEach((button) => {
+      button.addEventListener('click', () => {
+        const item = button.closest('.alert-item');
+        item.style.display = 'none';
+        showToast('Alert dismissed.');
+      });
+    });
+
+    securityBtn.addEventListener('click', () => {
+      const enabled = securityBtn.classList.toggle('enabled');
+      securityBtn.textContent = enabled ? 'Enabled' : 'Enable Now';
+      securityMessage.textContent = enabled
+        ? 'Extra protection is now enabled for your profile dashboard session.'
+        : 'Stay Secure, Stay Protected. Add another layer of security to your online banking profile.';
+      showToast(enabled ? 'Security protection enabled.' : 'Security protection disabled.');
+    });
+
+    function openTransactionsModal() {
+      transactionsModal.classList.add('open');
+    }
+
+    function closeTransactionsModal() {
+      transactionsModal.classList.remove('open');
+    }
+
+    document.getElementById('openTransactionsModalTop').addEventListener('click', openTransactionsModal);
+    document.querySelectorAll('[data-open-modal="transactions"]').forEach((button) => {
+      button.addEventListener('click', openTransactionsModal);
+    });
+    document.getElementById('closeTransactionsModal').addEventListener('click', closeTransactionsModal);
+    transactionsModal.addEventListener('click', (event) => {
+      if (event.target === transactionsModal) closeTransactionsModal();
+    });
+    // ── Profile & Password ──────────────────────────────────
+    const editProfileModal   = document.getElementById('editProfileModal');
+    const changePasswordModal = document.getElementById('changePasswordModal');
+    let pendingPhoto = '';
+
+    document.getElementById('openEditProfile').addEventListener('click', () => {
+      // Pre-fill fields
+      document.getElementById('editFullName').value = document.getElementById('dispFullName').textContent.trim();
+      document.getElementById('editEmail').value    = document.getElementById('dispEmail').textContent === 'Not set' ? '' : document.getElementById('dispEmail').textContent.trim();
+      document.getElementById('editPhone').value    = document.getElementById('dispPhone').textContent === 'Not set' ? '' : document.getElementById('dispPhone').textContent.trim();
+      // Pre-fill photo preview
+      const img = document.getElementById('profilePhotoImg');
+      const initial = document.getElementById('profilePhotoInitial');
+      const preview = document.getElementById('editPhotoPreview');
+      const initSpan = document.getElementById('editPhotoInitial');
+      if (img) {
+        preview.innerHTML = `<img src="${img.src}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        pendingPhoto = img.src;
+      } else {
+        initSpan.textContent = (initial ? initial.textContent : '?');
+        pendingPhoto = '';
+      }
+      document.getElementById('editProfileError').style.display = 'none';
+      editProfileModal.classList.add('open');
+    });
+
+    document.getElementById('closeEditProfile').addEventListener('click', () => editProfileModal.classList.remove('open'));
+    editProfileModal.addEventListener('click', e => { if (e.target === editProfileModal) editProfileModal.classList.remove('open'); });
+
+    // Photo file input
+    document.getElementById('photoInput').addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) { showToast('Image must be under 2MB.'); return; }
+      const reader = new FileReader();
+      reader.onload = e => {
+        pendingPhoto = e.target.result;
+        document.getElementById('editPhotoPreview').innerHTML =
+          `<img src="${pendingPhoto}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('saveProfileBtn').addEventListener('click', () => {
+      const btn = document.getElementById('saveProfileBtn');
+      const errEl = document.getElementById('editProfileError');
+      const full_name  = document.getElementById('editFullName').value.trim();
+      const email      = document.getElementById('editEmail').value.trim();
+      const phone      = document.getElementById('editPhone').value.trim();
+      if (!full_name) { errEl.textContent = 'Full name is required.'; errEl.style.display = 'block'; return; }
+      btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
+      fetch('/api/profile/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ full_name, email, phone_number: phone, photo: pendingPhoto })
+      })
+      .then(r => r.json())
+      .then(d => {
+        if (d.success) {
+          // Update displayed values
+          document.getElementById('dispFullName').textContent = d.full_name;
+          document.getElementById('dispEmail').textContent   = d.email || 'Not set';
+          document.getElementById('dispPhone').textContent   = d.phone_number || 'Not set';
+          // Update header avatar
+          const ha = document.getElementById('headerAvatar');
+          if (d.photo) {
+            ha.innerHTML = `<img src="${d.photo}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+            document.getElementById('profilePhotoDisplay').innerHTML =
+              `<img src="${d.photo}" style="width:100%;height:100%;object-fit:cover;" id="profilePhotoImg">`;
+          } else {
+            ha.textContent = d.full_name[0].toUpperCase();
+          }
+          editProfileModal.classList.remove('open');
+          showToast('Profile updated successfully.');
+        } else {
+          errEl.textContent = d.message || 'Update failed.'; errEl.style.display = 'block';
+        }
+        btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Save Changes';
+      })
+      .catch(() => { errEl.textContent = 'Network error.'; errEl.style.display = 'block'; btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Save Changes'; });
+    });
+
+    // Change Password
+    document.getElementById('openChangePassword').addEventListener('click', () => {
+      document.getElementById('currentPassword').value = '';
+      document.getElementById('newPassword').value = '';
+      document.getElementById('confirmPassword').value = '';
+      document.getElementById('pwStrengthBar').style.width = '0%';
+      document.getElementById('pwStrengthLabel').textContent = '';
+      document.getElementById('changePasswordError').style.display = 'none';
+      changePasswordModal.classList.add('open');
+    });
+    document.getElementById('closeChangePassword').addEventListener('click', () => changePasswordModal.classList.remove('open'));
+    changePasswordModal.addEventListener('click', e => { if (e.target === changePasswordModal) changePasswordModal.classList.remove('open'); });
+
+    document.getElementById('newPassword').addEventListener('input', function () {
+      const v = this.value;
+      const bar = document.getElementById('pwStrengthBar');
+      const lbl = document.getElementById('pwStrengthLabel');
+      let score = 0;
+      if (v.length >= 6) score++;
+      if (v.length >= 10) score++;
+      if (/[A-Z]/.test(v)) score++;
+      if (/[0-9]/.test(v)) score++;
+      if (/[^A-Za-z0-9]/.test(v)) score++;
+      const levels = ['', 'Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
+      const colors = ['', '#dc2626', '#ea580c', '#ca8a04', '#16a34a', '#2563eb'];
+      bar.style.width = (score * 20) + '%';
+      bar.style.background = colors[score] || '#eef2f7';
+      lbl.textContent = levels[score] || '';
+      lbl.style.color = colors[score] || 'var(--muted)';
+    });
+
+    document.getElementById('savePasswordBtn').addEventListener('click', () => {
+      const btn = document.getElementById('savePasswordBtn');
+      const errEl = document.getElementById('changePasswordError');
+      const current = document.getElementById('currentPassword').value;
+      const newPw   = document.getElementById('newPassword').value;
+      const confirm = document.getElementById('confirmPassword').value;
+      if (!current || !newPw || !confirm) { errEl.textContent = 'All fields are required.'; errEl.style.display = 'block'; return; }
+      btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating…';
+      fetch('/api/profile/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ current_password: current, new_password: newPw, confirm_password: confirm })
+      })
+      .then(r => r.json())
+      .then(d => {
+        if (d.success) {
+          changePasswordModal.classList.remove('open');
+          showToast('Password changed successfully.');
+        } else {
+          errEl.textContent = d.message || 'Failed to update password.'; errEl.style.display = 'block';
+        }
+        btn.disabled = false; btn.innerHTML = '<i class="fas fa-lock"></i> Update Password';
+      })
+      .catch(() => { errEl.textContent = 'Network error.'; errEl.style.display = 'block'; btn.disabled = false; btn.innerHTML = '<i class="fas fa-lock"></i> Update Password'; });
+    });
+  </script>
+</body>
+</html>

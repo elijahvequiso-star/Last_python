@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - PEV Banking</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="{{ url_for('static', filename='admin.css') }}" rel="stylesheet">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+
+    /* ── Premium Depositor Profile Modal ── */
+    .pev-modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      background: rgba(8, 12, 30, 0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 24px;
+    }
+    .pev-modal-backdrop.pev-modal--open {
+      display: flex;
+      animation: pevBackdropIn .22s ease;
+    }
+    @keyframes pevBackdropIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .pev-modal {
+      background: #ffffff;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 88vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,.06),
+        0 24px 64px rgba(8,12,30,.28),
+        0 8px 24px rgba(8,12,30,.14);
+      animation: pevModalIn .28s cubic-bezier(.22,.68,0,1.2);
+    }
+    @keyframes pevModalIn {
+      from { opacity: 0; transform: translateY(24px) scale(.97); }
+      to   { opacity: 1; transform: translateY(0)    scale(1);   }
+    }
+
+    /* Header gradient band */
+    .pev-modal-hero {
+      position: relative;
+      background: linear-gradient(135deg, #0f1e45 0%, #1a3a7c 50%, #1e4ba3 100%);
+      padding: 32px 28px 28px;
+      overflow: hidden;
+    }
+    .pev-modal-hero::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 180px; height: 180px;
+      background: rgba(255,255,255,.06);
+      border-radius: 50%;
+    }
+    .pev-modal-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; left: 30px;
+      width: 140px; height: 140px;
+      background: rgba(255,255,255,.04);
+      border-radius: 50%;
+    }
+    .pev-modal-close-btn {
+      position: absolute;
+      top: 16px; right: 16px;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,.15);
+      color: #fff;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      transition: background .15s;
+      z-index: 2;
+    }
+    .pev-modal-close-btn:hover { background: rgba(255,255,255,.28); }
+
+    .pev-modal-avatar {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #facc15, #f59e0b);
+      color: #0f1e45;
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.25);
+      position: relative; z-index: 1;
+    }
+    .pev-modal-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0 0 4px;
+      position: relative; z-index: 1;
+    }
+    .pev-modal-username {
+      font-size: 13px;
+      color: rgba(255,255,255,.6);
+      margin: 0;
+      position: relative; z-index: 1;
+    }
+    .pev-modal-status {
+      position: absolute;
+      top: 32px; right: 52px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      z-index: 2;
+    }
+    .pev-modal-status--active {
+      background: rgba(34,197,94,.2);
+      color: #4ade80;
+      border: 1px solid rgba(74,222,128,.3);
+    }
+    .pev-modal-status--warn {
+      background: rgba(251,191,36,.2);
+      color: #fbbf24;
+      border: 1px solid rgba(251,191,36,.3);
+    }
+
+    /* Stats strip */
+    .pev-modal-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: #f8faff;
+      border-bottom: 1px solid #eef1f8;
+    }
+    .pev-modal-stat {
+      padding: 18px 16px;
+      text-align: center;
+      border-right: 1px solid #eef1f8;
+    }
+    .pev-modal-stat:last-child { border-right: none; }
+    .pev-modal-stat-val {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f1e45;
+      display: block;
+      margin-bottom: 3px;
+    }
+    .pev-modal-stat-lbl {
+      font-size: 10px;
+      font-weight: 500;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    /* Body scroll area */
+    .pev-modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 28px;
+      scrollbar-width: thin;
+      scrollbar-color: #e2e8f0 transparent;
+    }
+
+    .pev-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .pev-info-item {
+      background: #f8faff;
+      border: 1px solid #eef1f8;
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .pev-info-item-lbl {
+      font-size: 10px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 5px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .pev-info-item-val {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f1e45;
+    }
+
+    .pev-history-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      margin: 0 0 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .pev-history-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #eef1f8;
+    }
+
+    .pev-history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .pev-history-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #f8faff;
+      border: 1px solid #eef1f8;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .pev-history-row:hover {
+      border-color: #c7d7f8;
+      box-shadow: 0 2px 8px rgba(37,99,235,.08);
+    }
+    .pev-history-icon {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+      display: flex; align-items: center; justify-content: center;
+      color: #2563eb;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .pev-history-info { flex: 1; min-width: 0; }
+    .pev-history-id {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f1e45;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: .02em;
+    }
+    .pev-history-date {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+    .pev-history-amount {
+      font-size: 14px;
+      font-weight: 700;
+      color: #16a34a;
+      white-space: nowrap;
+    }
+
+    .pev-empty-msg {
+      text-align: center;
+      padding: 32px 0;
+      color: #94a3b8;
+      font-size: 13px;
+    }
+
+    /* ── Financial Trends extras ── */
+    .ft-period-btns {
+      display: flex;
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 3px;
+      gap: 2px;
+    }
+    .ft-period-btn {
+      border: none;
+      background: transparent;
+      padding: 5px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      transition: background .15s, color .15s, box-shadow .15s;
+    }
+    .ft-period-btn:hover { color: #0f172a; }
+    .ft-period-btn--active {
+      background: #ffffff;
+      color: #1e40af;
+      box-shadow: 0 1px 4px rgba(0,0,0,.1);
+    }
+
+    .ft-kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 10px;
+      margin: 16px 0 20px;
+    }
+    .ft-kpi {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f8faff;
+      border: 1px solid #eef1f8;
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+    .ft-kpi-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .ft-kpi-val {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+      white-space: nowrap;
+    }
+    .ft-kpi-lbl {
+      font-size: 10px;
+      color: #94a3b8;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-top: 2px;
+    }
+    @media (max-width: 900px) {
+      .ft-kpi-row { grid-template-columns: repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body class="adm-body">
+<aside class="adm-sidebar">
+  <div class="adm-logo">
+    <span class="adm-logo-pev">PEV</span><span class="adm-logo-bank">Banking</span>
+  </div>
+
+  <div class="adm-nav-group">
+    <p class="adm-nav-label">Main</p>
+    <nav class="adm-nav">
+      <a href="#" class="adm-nav-item adm-nav-item--active" data-section="dashboard" data-title="Dashboard" data-subtitle="Overview of customers, balances, and activity">
+        <i class="fas fa-th-large"></i><span>Dashboard</span>
+      </a>
+      <a href="#" class="adm-nav-item" data-section="accounts" data-title="Accounts" data-subtitle="Create, update, and remove customer accounts">
+        <i class="fas fa-building-columns"></i><span>Accounts</span>
+      </a>
+      <a href="#" class="adm-nav-item" data-section="customers" data-title="Customers" data-subtitle="Browse customer profiles and balances">
+        <i class="fas fa-users"></i><span>Customers</span>
+      </a>
+      <a href="#" class="adm-nav-item" data-section="transactions" data-title="Transactions" data-subtitle="Review all recorded banking activity">
+        <i class="fas fa-arrow-right-arrow-left"></i><span>Transactions</span>
+      </a>
+    </nav>
+  </div>
+
+  <div class="adm-nav-group">
+    <p class="adm-nav-label">Finance</p>
+    <nav class="adm-nav">
+      <a href="#" class="adm-nav-item" data-section="deposits" data-title="Deposits" data-subtitle="View deposit activity and totals">
+        <i class="fas fa-piggy-bank"></i><span>Deposits</span>
+      </a>
+    </nav>
+  </div>
+
+  <div class="adm-nav-group">
+    <p class="adm-nav-label">System</p>
+    <nav class="adm-nav">
+      <a href="#" class="adm-nav-item" data-section="audit" data-title="Audit Logs" data-subtitle="Generated activity log for admin review">
+        <i class="fas fa-shield-halved"></i><span>Audit Logs</span>
+      </a>
+    </nav>
+  </div>
+
+  <a href="{{ url_for('logout') }}" class="adm-sidebar-logout">
+    <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+  </a>
+</aside>
+
+<div class="adm-main">
+  <header class="adm-topbar">
+    <div class="adm-topbar-left">
+      <h1 class="adm-page-title" id="pageTitle">Dashboard</h1>
+      <p class="adm-page-sub" id="pageSubtitle">Overview of customers, balances, and activity</p>
+    </div>
+    <div class="adm-topbar-right">
+      <div class="adm-search">
+        <i class="fas fa-search"></i>
+        <input type="text" id="globalSearch" placeholder="Search users, customers, transactions...">
+      </div>
+      <button class="adm-icon-btn" id="notifButton" type="button" aria-label="Show notifications">
+        <i class="fas fa-bell"></i>
+        <span class="adm-notif-dot"></span>
+      </button>
+      <div class="adm-profile" id="profileButton" tabindex="0" role="button">
+        <div class="adm-profile-avatar">A</div>
+        <div class="adm-profile-info">
+          <span class="adm-profile-name">Administrator</span>
+          <span class="adm-profile-role">Super Admin</span>
+        </div>
+        <i class="fas fa-chevron-down adm-profile-caret"></i>
+      </div>
+    </div>
+    <div class="adm-popover adm-notif-panel" id="notifPanel">
+      <div class="adm-popover-header">
+        <h3>Notifications</h3>
+        <span class="adm-badge adm-badge--blue" id="notifCount">0</span>
+      </div>
+      <div class="adm-popover-list" id="notifList"></div>
+    </div>
+    <div class="adm-popover adm-profile-panel" id="profilePanel">
+      <div class="adm-popover-header">
+        <h3>Admin Menu</h3>
+      </div>
+      <button type="button" class="adm-popover-btn" id="refreshButton"><i class="fas fa-rotate"></i> Refresh data</button>
+      <button type="button" class="adm-popover-btn" id="clearSearchButton"><i class="fas fa-broom"></i> Clear search</button>
+      <a href="{{ url_for('logout') }}" class="adm-popover-btn adm-popover-btn--link"><i class="fas fa-right-from-bracket"></i> Logout</a>
+    </div>
+  </header>
+
+  <div class="adm-content">
+    <section class="adm-section adm-section--active" id="section-dashboard">
+      <div class="adm-summary-grid">
+        <div class="adm-summary-card">
+          <div class="adm-summary-icon adm-summary-icon--blue">
+            <i class="fas fa-building-columns"></i>
+          </div>
+          <div class="adm-summary-info">
+            <p class="adm-summary-label">Total Accounts</p>
+            <h2 class="adm-summary-value" id="statAccounts">{{ stats.total_accounts }}</h2>
+            <span class="adm-summary-growth adm-growth--up"><i class="fas fa-arrow-trend-up"></i> Active</span>
+          </div>
+        </div>
+        <div class="adm-summary-card">
+          <div class="adm-summary-icon adm-summary-icon--green">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="adm-summary-info">
+            <p class="adm-summary-label">Total Customers</p>
+            <h2 class="adm-summary-value" id="statCustomers">{{ stats.total_customers }}</h2>
+            <span class="adm-summary-growth adm-growth--up"><i class="fas fa-arrow-trend-up"></i> Registered</span>
+          </div>
+        </div>
+        <div class="adm-summary-card">
+          <div class="adm-summary-icon adm-summary-icon--purple">
+            <i class="fas fa-piggy-bank"></i>
+          </div>
+          <div class="adm-summary-info">
+            <p class="adm-summary-label">Total Deposits</p>
+            <h2 class="adm-summary-value" id="statDeposits">&#8369;{{ "%.2f"|format(stats.total_deposits) }}</h2>
+            <span class="adm-summary-growth adm-growth--up"><i class="fas fa-arrow-trend-up"></i> All time</span>
+          </div>
+        </div>
+        <div class="adm-summary-card">
+          <div class="adm-summary-icon adm-summary-icon--orange">
+            <i class="fas fa-wallet"></i>
+          </div>
+          <div class="adm-summary-info">
+            <p class="adm-summary-label">Total Balance</p>
+            <h2 class="adm-summary-value" id="statBalance">&#8369;{{ "%.2f"|format(stats.total_balance) }}</h2>
+            <span class="adm-summary-growth adm-growth--up"><i class="fas fa-arrow-trend-up"></i> Combined</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="adm-charts-row">
+        <div class="adm-card adm-chart-card adm-chart-card--wide" style="padding-bottom:20px;">
+          <div class="adm-card-header" style="flex-wrap:wrap;gap:12px;">
+            <div>
+              <h3 class="adm-card-title">Financial Trends</h3>
+              <p class="adm-card-sub">Live activity from all recorded transactions</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <div class="ft-period-btns">
+                <button class="ft-period-btn ft-period-btn--active" data-period="daily">Daily</button>
+                <button class="ft-period-btn" data-period="weekly">Weekly</button>
+                <button class="ft-period-btn" data-period="monthly">Monthly</button>
+              </div>
+              <div class="adm-chart-legend" style="margin-left:8px;">
+                <span class="adm-legend-dot" style="background:#2563eb"></span> Deposits
+                <span class="adm-legend-dot" style="background:#ef4444;margin-left:10px;"></span> Withdrawals
+                <span class="adm-legend-dot" style="background:#8b5cf6;margin-left:10px;"></span> Transfers
+              </div>
+            </div>
+          </div>
+          <!-- KPI strip -->
+          <div class="ft-kpi-row" id="ftKpiRow">
+            <div class="ft-kpi">
+              <span class="ft-kpi-dot" style="background:#2563eb;"></span>
+              <div>
+                <div class="ft-kpi-val" id="ftKpiDeposits">—</div>
+                <div class="ft-kpi-lbl">Total Deposits</div>
+              </div>
+            </div>
+            <div class="ft-kpi">
+              <span class="ft-kpi-dot" style="background:#ef4444;"></span>
+              <div>
+                <div class="ft-kpi-val" id="ftKpiWithdrawals">—</div>
+                <div class="ft-kpi-lbl">Total Withdrawals</div>
+              </div>
+            </div>
+            <div class="ft-kpi">
+              <span class="ft-kpi-dot" style="background:#8b5cf6;"></span>
+              <div>
+                <div class="ft-kpi-val" id="ftKpiTransfers">—</div>
+                <div class="ft-kpi-lbl">Total Transfers</div>
+              </div>
+            </div>
+            <div class="ft-kpi">
+              <span class="ft-kpi-dot" style="background:#10b981;"></span>
+              <div>
+                <div class="ft-kpi-val" id="ftKpiNet">—</div>
+                <div class="ft-kpi-lbl">Net Flow</div>
+              </div>
+            </div>
+          </div>
+          <div style="position:relative;height:220px;margin-top:4px;">
+            <canvas id="lineChart"></canvas>
+          </div>
+        </div>
+
+        <div class="adm-card adm-chart-card">
+          <div class="adm-card-header">
+            <div>
+              <h3 class="adm-card-title">Account Distribution</h3>
+              <p class="adm-card-sub">Based on available account types in the system</p>
+            </div>
+          </div>
+          <div class="adm-donut-wrap">
+            <canvas id="donutChart"></canvas>
+          </div>
+          <div class="adm-donut-legend" id="donutLegend"></div>
+        </div>
+      </div>
+
+      <div class="adm-bottom-row">
+        <div class="adm-card adm-table-card">
+          <div class="adm-card-header">
+            <div>
+              <h3 class="adm-card-title">Recent Transactions</h3>
+              <p class="adm-card-sub">Latest activity across all accounts</p>
+            </div>
+            <span class="adm-badge adm-badge--blue" id="recentRecordCount">{{ stats.recent_transactions|length }} records</span>
+          </div>
+          <div class="adm-table-wrap">
+            <table class="adm-table">
+              <thead>
+                <tr>
+                  <th>Txn ID</th>
+                  <th>Date</th>
+                  <th>Customer</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="recentTransactionsBody">
+                {% if stats.recent_transactions %}
+                  {% for item in stats.recent_transactions %}
+                  <tr>
+                    <td class="adm-txn-id">#{{ item.txn.id }}</td>
+                    <td class="adm-txn-date">{{ item.txn.timestamp }}</td>
+                    <td class="adm-txn-customer">
+                      <div class="adm-customer-cell">
+                        <div class="adm-customer-avatar">{{ item.user[0].upper() }}</div>
+                        {{ item.user }}
+                      </div>
+                    </td>
+                    <td>
+                      <span class="adm-type-badge {% if item.txn.type == 'DEPOSIT' %}adm-type-badge--green{% elif item.txn.type == 'WITHDRAWAL' %}adm-type-badge--red{% else %}adm-type-badge--purple{% endif %}">
+                        {{ item.txn.type }}
+                      </span>
+                    </td>
+                    <td class="adm-txn-amount {{ 'adm-amount--pos' if item.txn.amount > 0 else 'adm-amount--neg' }}">
+                      {{ '+' if item.txn.amount > 0 else '-' }}&#8369;{{ '%.2f'|format(item.txn.amount|abs) }}
+                    </td>
+                    <td><span class="adm-status-badge adm-status-badge--success">Completed</span></td>
+                  </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr><td colspan="6" class="adm-table-empty">No transactions found</td></tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="adm-card adm-loan-card">
+          <div class="adm-card-header">
+            <div>
+              <h3 class="adm-card-title">Customer Snapshot</h3>
+              <p class="adm-card-sub">Quick balance overview of your latest registered customers</p>
+            </div>
+            <i class="fas fa-users adm-loan-icon"></i>
+          </div>
+          <div class="adm-loan-metrics" id="loanMetrics">
+            <div class="adm-loan-metric">
+              <div class="adm-loan-metric-icon" style="background:#dbeafe;color:#2563eb"><i class="fas fa-file-invoice-dollar"></i></div>
+              <div class="adm-loan-metric-info">
+                <span class="adm-loan-metric-label">Total Customers</span>
+                <span class="adm-loan-metric-value">{{ stats.total_customers }}</span>
+              </div>
+            </div>
+            <div class="adm-loan-metric">
+              <div class="adm-loan-metric-icon" style="background:#dcfce7;color:#16a34a"><i class="fas fa-peso-sign"></i></div>
+              <div class="adm-loan-metric-info">
+                <span class="adm-loan-metric-label">Combined Balance</span>
+                <span class="adm-loan-metric-value">&#8369;{{ "%.2f"|format(stats.total_balance) }}</span>
+              </div>
+            </div>
+            <div class="adm-loan-metric">
+              <div class="adm-loan-metric-icon" style="background:#ede9fe;color:#7c3aed"><i class="fas fa-scale-balanced"></i></div>
+              <div class="adm-loan-metric-info">
+                <span class="adm-loan-metric-label">Total Deposits</span>
+                <span class="adm-loan-metric-value">&#8369;{{ "%.2f"|format(stats.total_deposits) }}</span>
+              </div>
+            </div>
+            <div class="adm-loan-metric">
+              <div class="adm-loan-metric-icon" style="background:#fee2e2;color:#dc2626"><i class="fas fa-triangle-exclamation"></i></div>
+              <div class="adm-loan-metric-info">
+                <span class="adm-loan-metric-label">Low Balance Users</span>
+                <span class="adm-loan-metric-value adm-overdue">{{ stats.low_balance_count }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="adm-customer-list-header">
+            <span>Registered Customers</span>
+            <span class="adm-badge adm-badge--gray" id="customerListCount">{{ stats.users|length }}</span>
+          </div>
+          <div class="adm-customer-list" id="dashboardCustomerList">
+            {% for u in stats.users %}
+            <div class="adm-customer-row">
+              <div class="adm-customer-avatar adm-customer-avatar--sm">{{ u.full_name[0].upper() }}</div>
+              <div class="adm-customer-info">
+                <span class="adm-customer-name">{{ u.full_name }}</span>
+                <span class="adm-customer-bal">&#8369;{{ '%.2f'|format(u.account.balance) }}</span>
+              </div>
+              <span class="adm-status-badge adm-status-badge--success">Active</span>
+            </div>
+            {% else %}
+            <p class="adm-empty-msg">No customers yet</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="adm-section" id="section-accounts">
+      <div class="adm-card">
+        <div class="adm-card-header">
+          <div>
+            <h3 class="adm-card-title">Create Customer Account</h3>
+            <p class="adm-card-sub">Use this form to add a new customer directly from the admin dashboard</p>
+          </div>
+          <span class="adm-badge adm-badge--gray">Admin tool</span>
+        </div>
+        <form class="adm-inline-form" id="createUserForm">
+          <input class="adm-input" type="text" name="full_name" placeholder="Full name" required>
+          <input class="adm-input" type="text" name="username" placeholder="Username" required>
+          <input class="adm-input" type="text" name="phone_number" placeholder="09XXXXXXXXX" required>
+          <input class="adm-input" type="password" name="password" placeholder="Password" required>
+          <button class="adm-primary-btn" type="submit">Create user</button>
+        </form>
+      </div>
+
+      <div class="adm-card">
+        <div class="adm-card-header">
+          <div>
+            <h3 class="adm-card-title">Manage Accounts</h3>
+            <p class="adm-card-sub">Adjust balances, inspect transaction counts, or delete a customer account</p>
+          </div>
+          <span class="adm-badge adm-badge--blue" id="accountsCountBadge">0 accounts</span>
+        </div>
+        <div class="adm-table-wrap">
+          <table class="adm-table">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Username</th>
+                <th>Phone</th>
+                <th>Account Number</th>
+                <th>Balance</th>
+                <th>Transactions</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="accountsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="adm-section" id="section-customers">
+      <div class="adm-card">
+        <div class="adm-card-header">
+          <div>
+            <h3 class="adm-card-title">Customer Directory</h3>
+            <p class="adm-card-sub">Quick profile view for every registered customer</p>
+          </div>
+          <span class="adm-badge adm-badge--blue" id="customersCountBadge">0 customers</span>
+        </div>
+        <div class="adm-customer-grid" id="customerCards"></div>
+      </div>
+    </section>
+
+    <section class="adm-section" id="section-transactions">
+      <div class="adm-card">
+        <div class="adm-card-header adm-card-header--stack">
+          <div>
+            <h3 class="adm-card-title">All Transactions</h3>
+            <p class="adm-card-sub">Filter and review complete transaction history</p>
+          </div>
+          <div class="adm-toolbar">
+            <select class="adm-select" id="transactionTypeFilter">
+              <option value="ALL">All types</option>
+              <option value="DEPOSIT">Deposits</option>
+              <option value="WITHDRAWAL">Withdrawals</option>
+              <option value="TRANSFER">Transfers</option>
+            </select>
+            <span class="adm-badge adm-badge--gray" id="transactionsCountBadge">0 records</span>
+          </div>
+        </div>
+        <div class="adm-table-wrap">
+          <table class="adm-table">
+            <thead>
+              <tr>
+                <th>Txn ID</th>
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Type</th>
+                <th>Recipient</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody id="allTransactionsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="adm-section" id="section-deposits">
+      <div class="adm-card">
+        <div class="adm-card-header">
+          <div>
+            <h3 class="adm-card-title">Deposit Activity</h3>
+            <p class="adm-card-sub">All deposits recorded — click View to inspect the depositor's profile</p>
+          </div>
+          <span class="adm-badge adm-badge--blue" id="depositsCountBadge">0 deposits</span>
+        </div>
+        <div class="adm-table-wrap">
+          <table class="adm-table">
+            <thead>
+              <tr>
+                <th>Txn ID</th>
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Account</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="depositsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="adm-section" id="section-audit">
+      <div class="adm-card">
+        <div class="adm-card-header">
+          <div>
+            <h3 class="adm-card-title">Audit Log</h3>
+            <p class="adm-card-sub">Generated from customer creation, balance status, and transaction events</p>
+          </div>
+          <span class="adm-badge adm-badge--gray" id="auditCountBadge">0 events</span>
+        </div>
+        <div class="adm-list" id="auditLogList"></div>
+      </div>
+    </section>
+
+    <section class="adm-section" id="section-settings">
+      <div class="adm-tile-grid">
+        <div class="adm-card">
+          <h3 class="adm-card-title">Dashboard Controls</h3>
+          <p class="adm-card-sub">Use these quick tools to keep the admin console tidy while you work.</p>
+          <div class="adm-action-stack">
+            <button type="button" class="adm-primary-btn" id="settingsRefreshButton">Refresh dashboard data</button>
+            <button type="button" class="adm-secondary-btn" id="settingsClearButton">Clear search and filters</button>
+          </div>
+        </div>
+        <div class="adm-card">
+          <h3 class="adm-card-title">Session Overview</h3>
+          <div class="adm-stat-stack">
+            <div class="adm-stat-row"><span>Role</span><strong>Super Admin</strong></div>
+            <div class="adm-stat-row"><span>Logged in user</span><strong>admin</strong></div>
+            <div class="adm-stat-row"><span>Low balance customers</span><strong id="settingsLowBalanceCount">0</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ── Premium Depositor Profile Modal ── -->
+<div class="pev-modal-backdrop" id="profileModal">
+  <div class="pev-modal" role="dialog" aria-modal="true" aria-labelledby="pevModalName">
+    <div class="pev-modal-hero" id="pevModalHero">
+      <button class="pev-modal-close-btn" id="closeProfileModal" type="button" aria-label="Close">
+        <i class="fas fa-xmark"></i>
+      </button>
+      <div class="pev-modal-avatar" id="pevModalAvatar">?</div>
+      <h2 class="pev-modal-name" id="pevModalName">—</h2>
+      <p class="pev-modal-username" id="pevModalUsername">—</p>
+      <span class="pev-modal-status pev-modal-status--active" id="pevModalStatus">Active</span>
+    </div>
+    <div class="pev-modal-stats" id="pevModalStats"></div>
+    <div class="pev-modal-body" id="profileModalBody"></div>
+  </div>
+</div>
+
+<div class="adm-toast" id="toast"></div>
+
+<!-- ============================================================
+     FIX: The opening <script> tag was missing in the original,
+     causing the JS variable assignment to render as raw text
+     on the page and breaking all scripts below it.
+     ============================================================ -->
+<script>
+  window.__INITIAL_ADMIN_STATS__ = {{ {
+    'total_accounts': stats.total_accounts,
+    'total_customers': stats.total_customers,
+    'total_deposits': stats.total_deposits,
+    'total_balance': stats.total_balance,
+    'total_withdrawals': stats.total_withdrawals,
+    'monthly_trends': stats.monthly_trends,
+    'account_distribution': stats.account_distribution,
+    'low_balance_count': stats.low_balance_count,
+    'generated_at': stats.generated_at
+  }|tojson }};
+</script>
+
+<script>
+const state = {
+  stats: window.__INITIAL_ADMIN_STATS__ || {},
+  users: [],
+  transactions: [],
+  activeSection: 'dashboard',
+  searchTerm: '',
+  transactionFilter: 'ALL',
+  charts: { line: null, donut: null }
+};
+
+const pageTitle = document.getElementById('pageTitle');
+const pageSubtitle = document.getElementById('pageSubtitle');
+const navItems = Array.from(document.querySelectorAll('.adm-nav-item'));
+const sections = Array.from(document.querySelectorAll('.adm-section'));
+const globalSearch = document.getElementById('globalSearch');
+const transactionTypeFilter = document.getElementById('transactionTypeFilter');
+const notifPanel = document.getElementById('notifPanel');
+const profilePanel = document.getElementById('profilePanel');
+const toast = document.getElementById('toast');
+
+// Modal elements
+const profileModal = document.getElementById('profileModal');
+const closeProfileModal = document.getElementById('closeProfileModal');
+
+function openProfileModal(html) {
+  document.getElementById('profileModalBody').innerHTML = html;
+  profileModal.classList.add('pev-modal--open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  profileModal.classList.remove('pev-modal--open');
+  document.body.style.overflow = '';
+}
+
+closeProfileModal.addEventListener('click', closeModal);
+profileModal.addEventListener('click', event => {
+  if (event.target === profileModal) closeModal();
+});
+
+// Escape key closes modal
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && profileModal.classList.contains('pev-modal--open')) closeModal();
+});
+
+function formatCurrency(value) {
+  return new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP'
+  }).format(Number(value || 0));
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function showToast(message, isError = false) {
+  toast.textContent = message;
+  toast.classList.toggle('adm-toast--error', isError);
+  toast.classList.add('adm-toast--visible');
+  window.clearTimeout(showToast.timer);
+  showToast.timer = window.setTimeout(() => {
+    toast.classList.remove('adm-toast--visible');
+  }, 2600);
+}
+
+function setActiveSection(sectionName, title, subtitle) {
+  state.activeSection = sectionName;
+  // Period filter buttons for Financial Trends
+document.querySelectorAll('.ft-period-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.ft-period-btn').forEach(b => b.classList.remove('ft-period-btn--active'));
+    btn.classList.add('ft-period-btn--active');
+    chartPeriod = btn.dataset.period;
+    renderLineChart();
+  });
+});
+
+navItems.forEach(item => {
+    item.classList.toggle('adm-nav-item--active', item.dataset.section === sectionName);
+  });
+  sections.forEach(section => {
+    section.classList.toggle('adm-section--active', section.id === `section-${sectionName}`);
+  });
+  pageTitle.textContent = title;
+  pageSubtitle.textContent = subtitle;
+  applyFilters();
+}
+
+function buildNotifications() {
+  const items = [];
+  items.push(`${state.stats.total_customers || 0} customer account(s) currently registered.`);
+  items.push(`${state.stats.low_balance_count || 0} customer(s) have balances below ${formatCurrency(1000)}.`);
+  items.push(`${state.transactions.length} total transaction(s) are available for review.`);
+  if (!state.transactions.length) {
+    items.push('No transactions recorded yet. Deposit, withdrawal, and transfer activity will appear here.');
+  }
+
+  document.getElementById('notifCount').textContent = items.length;
+  document.getElementById('notifList').innerHTML = items.map(text => `
+    <div class="adm-list-item">
+      <div class="adm-list-item-icon"><i class="fas fa-circle-info"></i></div>
+      <div>
+        <strong>System notice</strong>
+        <p>${escapeHtml(text)}</p>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Chart period state ─────────────────────────────────────────────────────
+let chartPeriod = 'daily';
+
+function buildTrendData(period) {
+  const txns = state.transactions;
+  if (!txns.length) return { labels: [], deposits: [], withdrawals: [], transfers: [] };
+
+  // Parse and bucket transactions by period
+  const buckets = {};
+  txns.forEach(t => {
+    const d = new Date(t.timestamp.replace(' ', 'T'));
+    if (isNaN(d)) return;
+    let key;
+    if (period === 'daily') {
+      key = d.toISOString().slice(0, 10); // YYYY-MM-DD
+    } else if (period === 'weekly') {
+      // ISO week: Monday of the week
+      const day = d.getDay() || 7;
+      const mon = new Date(d); mon.setDate(d.getDate() - day + 1);
+      key = mon.toISOString().slice(0, 10);
+    } else {
+      key = d.toISOString().slice(0, 7); // YYYY-MM
+    }
+    if (!buckets[key]) buckets[key] = { deposits: 0, withdrawals: 0, transfers: 0 };
+    const amt = Math.abs(t.amount);
+    if (t.type === 'DEPOSIT')    buckets[key].deposits    += amt;
+    if (t.type === 'WITHDRAWAL') buckets[key].withdrawals += amt;
+    if (t.type === 'TRANSFER')   buckets[key].transfers   += amt;
+  });
+
+  const sortedKeys = Object.keys(buckets).sort();
+
+  // Format labels nicely
+  const labels = sortedKeys.map(k => {
+    if (period === 'daily') {
+      const d = new Date(k + 'T00:00:00');
+      return d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
+    } else if (period === 'weekly') {
+      const d = new Date(k + 'T00:00:00');
+      return 'Wk ' + d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
+    } else {
+      const d = new Date(k + '-01T00:00:00');
+      return d.toLocaleDateString('en-PH', { month: 'short', year: 'numeric' });
+    }
+  });
+
+  return {
+    labels,
+    deposits:    sortedKeys.map(k => buckets[k].deposits),
+    withdrawals: sortedKeys.map(k => buckets[k].withdrawals),
+    transfers:   sortedKeys.map(k => buckets[k].transfers),
+  };
+}
+
+function updateKpis(data) {
+  const totalDep = data.deposits.reduce((s, v) => s + v, 0);
+  const totalWit = data.withdrawals.reduce((s, v) => s + v, 0);
+  const totalTrf = data.transfers.reduce((s, v) => s + v, 0);
+  const net = totalDep - totalWit - totalTrf;
+
+  document.getElementById('ftKpiDeposits').textContent    = formatCurrency(totalDep);
+  document.getElementById('ftKpiWithdrawals').textContent = formatCurrency(totalWit);
+  document.getElementById('ftKpiTransfers').textContent   = formatCurrency(totalTrf);
+  const netEl = document.getElementById('ftKpiNet');
+  netEl.textContent = (net >= 0 ? '+' : '') + formatCurrency(net);
+  netEl.style.color = net >= 0 ? '#16a34a' : '#dc2626';
+}
+
+function renderLineChart() {
+  const data = buildTrendData(chartPeriod);
+
+  // If we only have 1 point, pad with a zero at the start so a line draws
+  if (data.labels.length === 1) {
+    data.labels.unshift('—');
+    data.deposits.unshift(0);
+    data.withdrawals.unshift(0);
+    data.transfers.unshift(0);
+  }
+
+  updateKpis(data);
+
+  const lineCtx = document.getElementById('lineChart').getContext('2d');
+  if (state.charts.line) state.charts.line.destroy();
+
+  // Gradient fills
+  const gradDep = lineCtx.createLinearGradient(0, 0, 0, 220);
+  gradDep.addColorStop(0, 'rgba(37,99,235,0.18)');
+  gradDep.addColorStop(1, 'rgba(37,99,235,0)');
+
+  const gradWit = lineCtx.createLinearGradient(0, 0, 0, 220);
+  gradWit.addColorStop(0, 'rgba(239,68,68,0.13)');
+  gradWit.addColorStop(1, 'rgba(239,68,68,0)');
+
+  const gradTrf = lineCtx.createLinearGradient(0, 0, 0, 220);
+  gradTrf.addColorStop(0, 'rgba(139,92,246,0.13)');
+  gradTrf.addColorStop(1, 'rgba(139,92,246,0)');
+
+  state.charts.line = new Chart(lineCtx, {
+    type: 'line',
+    data: {
+      labels: data.labels.length ? data.labels : ['No data'],
+      datasets: [
+        {
+          label: 'Deposits',
+          data: data.deposits.length ? data.deposits : [0],
+          borderColor: '#2563eb',
+          backgroundColor: gradDep,
+          borderWidth: 2.5,
+          pointBackgroundColor: '#2563eb',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: data.labels.length <= 10 ? 5 : 3,
+          pointHoverRadius: 7,
+          tension: 0.4,
+          fill: true
+        },
+        {
+          label: 'Withdrawals',
+          data: data.withdrawals.length ? data.withdrawals : [0],
+          borderColor: '#ef4444',
+          backgroundColor: gradWit,
+          borderWidth: 2.5,
+          pointBackgroundColor: '#ef4444',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: data.labels.length <= 10 ? 5 : 3,
+          pointHoverRadius: 7,
+          tension: 0.4,
+          fill: true
+        },
+        {
+          label: 'Transfers',
+          data: data.transfers.length ? data.transfers : [0],
+          borderColor: '#8b5cf6',
+          backgroundColor: gradTrf,
+          borderWidth: 2.5,
+          pointBackgroundColor: '#8b5cf6',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: data.labels.length <= 10 ? 5 : 3,
+          pointHoverRadius: 7,
+          tension: 0.4,
+          fill: true
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0f1e45',
+          titleColor: '#94a3b8',
+          bodyColor: '#fff',
+          padding: 12,
+          cornerRadius: 10,
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${formatCurrency(ctx.parsed.y)}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: '#f1f5f9', drawBorder: false },
+          ticks: { color: '#94a3b8', font: { size: 11 }, maxTicksLimit: 10 }
+        },
+        y: {
+          grid: { color: '#f1f5f9', drawBorder: false },
+          ticks: {
+            color: '#94a3b8',
+            font: { size: 11 },
+            callback: value => {
+              if (value >= 1_000_000) return '₱' + (value/1_000_000).toFixed(1) + 'M';
+              if (value >= 1_000)     return '₱' + (value/1_000).toFixed(0) + 'K';
+              return '₱' + value;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderCharts() {
+  renderLineChart();
+
+  const distribution = state.stats.account_distribution || {};
+  const donutCtx = document.getElementById('donutChart').getContext('2d');
+  if (state.charts.donut) state.charts.donut.destroy();
+  const donutLabels = Object.keys(distribution);
+  const donutValues = Object.values(distribution);
+  const donutColors = ['#2563eb', '#7c3aed', '#16a34a', '#ea580c'];
+  state.charts.donut = new Chart(donutCtx, {
+    type: 'doughnut',
+    data: {
+      labels: donutLabels,
+      datasets: [{
+        data: donutValues,
+        backgroundColor: donutColors.slice(0, donutLabels.length),
+        borderWidth: 0,
+        hoverOffset: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '72%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0f1e45',
+          titleColor: '#94a3b8',
+          bodyColor: '#fff',
+          padding: 10,
+          cornerRadius: 8
+        }
+      }
+    }
+  });
+
+  document.getElementById('donutLegend').innerHTML = donutLabels.map((label, index) => `
+    <div class="adm-donut-legend-item">
+      <span style="background:${donutColors[index]}"></span>${escapeHtml(label)} (${distribution[label]})
+    </div>
+  `).join('');
+}
+
+function renderStats() {
+  document.getElementById('statAccounts').textContent = state.stats.total_accounts || 0;
+  document.getElementById('statCustomers').textContent = state.stats.total_customers || 0;
+  document.getElementById('statDeposits').textContent = formatCurrency(state.stats.total_deposits || 0);
+  document.getElementById('statBalance').textContent = formatCurrency(state.stats.total_balance || 0);
+  document.getElementById('settingsLowBalanceCount').textContent = state.stats.low_balance_count || 0;
+}
+
+function filteredUsers() {
+  const q = state.searchTerm.trim().toLowerCase();
+  if (!q) return state.users;
+  return state.users.filter(user =>
+    user.full_name.toLowerCase().includes(q) ||
+    user.username.toLowerCase().includes(q) ||
+    (user.phone_number || '').toLowerCase().includes(q) ||
+    user.account_number.toLowerCase().includes(q)
+  );
+}
+
+function filteredTransactions() {
+  const q = state.searchTerm.trim().toLowerCase();
+  return state.transactions.filter(txn => {
+    const matchesType = state.transactionFilter === 'ALL' || txn.type === state.transactionFilter;
+    const haystack = [txn.id, txn.user, txn.type, txn.timestamp, txn.recipient || ''].join(' ').toLowerCase();
+    const matchesSearch = !q || haystack.includes(q);
+    return matchesType && matchesSearch;
+  });
+}
+
+function renderRecentTransactions() {
+  const rows = state.transactions.slice(0, 10);
+  document.getElementById('recentRecordCount').textContent = `${rows.length} records`;
+  document.getElementById('recentTransactionsBody').innerHTML = rows.length ? rows.map(txn => `
+    <tr>
+      <td class="adm-txn-id">#${escapeHtml(txn.id)}</td>
+      <td class="adm-txn-date">${escapeHtml(txn.timestamp)}</td>
+      <td>
+        <div class="adm-customer-cell">
+          <div class="adm-customer-avatar">${escapeHtml((txn.user || 'U').charAt(0).toUpperCase())}</div>
+          ${escapeHtml(txn.user)}
+        </div>
+      </td>
+      <td><span class="adm-type-badge ${txn.type === 'DEPOSIT' ? 'adm-type-badge--green' : txn.type === 'WITHDRAWAL' ? 'adm-type-badge--red' : 'adm-type-badge--purple'}">${escapeHtml(txn.type)}</span></td>
+      <td class="adm-txn-amount ${txn.amount >= 0 ? 'adm-amount--pos' : 'adm-amount--neg'}">${txn.amount >= 0 ? '+' : '-'}${escapeHtml(formatCurrency(Math.abs(txn.amount)))}</td>
+      <td><span class="adm-status-badge adm-status-badge--success">Completed</span></td>
+    </tr>
+  `).join('') : '<tr><td colspan="6" class="adm-table-empty">No transactions found</td></tr>';
+}
+
+function renderAccounts() {
+  const users = filteredUsers();
+  document.getElementById('accountsCountBadge').textContent = `${users.length} accounts`;
+  document.getElementById('accountsTableBody').innerHTML = users.length ? users.map(user => `
+    <tr>
+      <td>
+        <div class="adm-customer-cell">
+          <div class="adm-customer-avatar">${escapeHtml(user.full_name.charAt(0).toUpperCase())}</div>
+          ${escapeHtml(user.full_name)}
+        </div>
+      </td>
+      <td>${escapeHtml(user.username)}</td>
+      <td class="adm-txn-id">${escapeHtml(user.phone_number || '-')}</td>
+      <td class="adm-txn-id">${escapeHtml(user.account_number)}</td>
+      <td>${escapeHtml(formatCurrency(user.balance))}</td>
+      <td>${user.txn_count}</td>
+      <td>
+        <div class="adm-action-row">
+          <button type="button" class="adm-table-btn" data-action="add-balance" data-user="${escapeHtml(user.username)}">Add funds</button>
+          <button type="button" class="adm-table-btn" data-action="set-balance" data-user="${escapeHtml(user.username)}">Set balance</button>
+          <button type="button" class="adm-table-btn adm-table-btn--danger" data-action="delete-user" data-user="${escapeHtml(user.username)}">Delete</button>
+        </div>
+      </td>
+    </tr>
+  `).join('') : '<tr><td colspan="7" class="adm-table-empty">No accounts match your search</td></tr>';
+}
+
+function renderCustomers() {
+  const users = filteredUsers();
+  document.getElementById('customersCountBadge').textContent = `${users.length} customers`;
+  document.getElementById('customerListCount').textContent = users.length;
+  const cards = users.length ? users.map(user => `
+    <article class="adm-customer-card">
+      <div class="adm-customer-card-top">
+        <div class="adm-customer-avatar">${escapeHtml(user.full_name.charAt(0).toUpperCase())}</div>
+        <div>
+          <h4>${escapeHtml(user.full_name)}</h4>
+          <p>@${escapeHtml(user.username)}</p>
+        </div>
+      </div>
+      <div class="adm-stat-stack">
+        <div class="adm-stat-row"><span>Mobile number</span><strong>${escapeHtml(user.phone_number || '-')}</strong></div>
+        <div class="adm-stat-row"><span>Account number</span><strong>${escapeHtml(user.account_number)}</strong></div>
+        <div class="adm-stat-row"><span>Balance</span><strong>${escapeHtml(formatCurrency(user.balance))}</strong></div>
+        <div class="adm-stat-row"><span>Transactions</span><strong>${user.txn_count}</strong></div>
+      </div>
+    </article>
+  `).join('') : '<p class="adm-empty-msg">No customers match your search</p>';
+  document.getElementById('customerCards').innerHTML = cards;
+  document.getElementById('dashboardCustomerList').innerHTML = users.length ? users.slice(0, 8).map(user => `
+    <div class="adm-customer-row">
+      <div class="adm-customer-avatar adm-customer-avatar--sm">${escapeHtml(user.full_name.charAt(0).toUpperCase())}</div>
+      <div class="adm-customer-info">
+        <span class="adm-customer-name">${escapeHtml(user.full_name)}</span>
+        <span class="adm-customer-bal">${escapeHtml(formatCurrency(user.balance))}</span>
+      </div>
+      <span class="adm-status-badge ${user.balance < 1000 ? 'adm-status-badge--warn' : 'adm-status-badge--success'}">${user.balance < 1000 ? 'Low balance' : 'Active'}</span>
+    </div>
+  `).join('') : '<p class="adm-empty-msg">No customers yet</p>';
+}
+
+function renderTransactions() {
+  const rows = filteredTransactions();
+  document.getElementById('transactionsCountBadge').textContent = `${rows.length} records`;
+  document.getElementById('allTransactionsBody').innerHTML = rows.length ? rows.map(txn => `
+    <tr>
+      <td class="adm-txn-id">#${escapeHtml(txn.id)}</td>
+      <td class="adm-txn-date">${escapeHtml(txn.timestamp)}</td>
+      <td>${escapeHtml(txn.user)}</td>
+      <td><span class="adm-type-badge ${txn.type === 'DEPOSIT' ? 'adm-type-badge--green' : txn.type === 'WITHDRAWAL' ? 'adm-type-badge--red' : 'adm-type-badge--purple'}">${escapeHtml(txn.type)}</span></td>
+      <td>${escapeHtml(txn.recipient || '-')}</td>
+      <td class="adm-txn-amount ${txn.amount >= 0 ? 'adm-amount--pos' : 'adm-amount--neg'}">${txn.amount >= 0 ? '+' : '-'}${escapeHtml(formatCurrency(Math.abs(txn.amount)))}</td>
+    </tr>
+  `).join('') : '<tr><td colspan="6" class="adm-table-empty">No transactions match the current filter</td></tr>';
+
+  const deposits = rows.filter(txn => txn.type === 'DEPOSIT');
+  document.getElementById('depositsCountBadge').textContent = `${deposits.length} deposits`;
+  document.getElementById('depositsTableBody').innerHTML = deposits.length ? deposits.map(txn => {
+    // Find matching user to get their account number
+    const matchedUser = state.users.find(u => u.full_name === txn.user || u.username === txn.user);
+    const accountNumber = matchedUser ? escapeHtml(matchedUser.account_number) : '-';
+    return `
+    <tr>
+      <td class="adm-txn-id">#${escapeHtml(txn.id)}</td>
+      <td class="adm-txn-date">${escapeHtml(txn.timestamp)}</td>
+      <td>
+        <div class="adm-customer-cell">
+          <div class="adm-customer-avatar">${escapeHtml((txn.user || 'U').charAt(0).toUpperCase())}</div>
+          ${escapeHtml(txn.user)}
+        </div>
+      </td>
+      <td class="adm-txn-amount adm-amount--pos">${escapeHtml(formatCurrency(txn.amount))}</td>
+      <td class="adm-txn-id">${accountNumber}</td>
+      <td>
+        <button type="button" class="adm-table-btn" data-action="view-depositor" data-user="${escapeHtml(txn.user)}">
+          <i class="fas fa-eye" style="margin-right:4px;"></i>View
+        </button>
+      </td>
+    </tr>
+  `}).join('') : '<tr><td colspan="6" class="adm-table-empty">No deposit transactions available</td></tr>';
+}
+
+function openDepositorProfile(userName) {
+  const user = state.users.find(u => u.full_name === userName || u.username === userName);
+  if (!user) { showToast('Customer profile not found.', true); return; }
+
+  const userDeposits = state.transactions.filter(t => t.type === 'DEPOSIT' && t.user === userName);
+  const totalDeposited = userDeposits.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+  const isLow = user.balance < 1000;
+
+  // Populate hero section
+  document.getElementById('pevModalAvatar').textContent = user.full_name.charAt(0).toUpperCase();
+  document.getElementById('pevModalName').textContent = user.full_name;
+  document.getElementById('pevModalUsername').textContent = '@' + user.username;
+  const statusEl = document.getElementById('pevModalStatus');
+  statusEl.textContent = isLow ? 'Low Balance' : 'Active';
+  statusEl.className = 'pev-modal-status ' + (isLow ? 'pev-modal-status--warn' : 'pev-modal-status--active');
+
+  // Populate 3-stat strip
+  document.getElementById('pevModalStats').innerHTML = `
+    <div class="pev-modal-stat">
+      <span class="pev-modal-stat-val">${escapeHtml(formatCurrency(user.balance))}</span>
+      <span class="pev-modal-stat-lbl">Balance</span>
+    </div>
+    <div class="pev-modal-stat">
+      <span class="pev-modal-stat-val">${escapeHtml(formatCurrency(totalDeposited))}</span>
+      <span class="pev-modal-stat-lbl">Total Deposited</span>
+    </div>
+    <div class="pev-modal-stat">
+      <span class="pev-modal-stat-val">${user.txn_count}</span>
+      <span class="pev-modal-stat-lbl">Transactions</span>
+    </div>
+  `;
+
+  // Populate body: info grid + deposit history
+  const bodyHtml = `
+    <div class="pev-info-grid">
+      <div class="pev-info-item">
+        <div class="pev-info-item-lbl"><i class="fas fa-phone"></i> Mobile</div>
+        <div class="pev-info-item-val">${escapeHtml(user.phone_number || '—')}</div>
+      </div>
+      <div class="pev-info-item">
+        <div class="pev-info-item-lbl"><i class="fas fa-credit-card"></i> Account No.</div>
+        <div class="pev-info-item-val" style="font-size:12px;letter-spacing:.03em;">${escapeHtml(user.account_number)}</div>
+      </div>
+      <div class="pev-info-item">
+        <div class="pev-info-item-lbl"><i class="fas fa-user"></i> Username</div>
+        <div class="pev-info-item-val">@${escapeHtml(user.username)}</div>
+      </div>
+      <div class="pev-info-item">
+        <div class="pev-info-item-lbl"><i class="fas fa-piggy-bank"></i> Deposits</div>
+        <div class="pev-info-item-val">${userDeposits.length} transaction${userDeposits.length !== 1 ? 's' : ''}</div>
+      </div>
+    </div>
+
+    <p class="pev-history-title">Deposit History <span style="color:#cbd5e1;font-weight:400;">(${userDeposits.length})</span></p>
+    ${userDeposits.length ? `
+      <div class="pev-history-list">
+        ${userDeposits.map(t => `
+          <div class="pev-history-row">
+            <div class="pev-history-icon"><i class="fas fa-arrow-down"></i></div>
+            <div class="pev-history-info">
+              <div class="pev-history-id">#${escapeHtml(t.id)}</div>
+              <div class="pev-history-date">${escapeHtml(t.timestamp)}</div>
+            </div>
+            <div class="pev-history-amount">+${escapeHtml(formatCurrency(t.amount))}</div>
+          </div>
+        `).join('')}
+      </div>
+    ` : '<div class="pev-empty-msg"><i class="fas fa-inbox" style="font-size:24px;display:block;margin-bottom:8px;opacity:.4;"></i>No deposit history found.</div>'}
+  `;
+
+  openProfileModal(bodyHtml);
+}
+
+function renderAuditLogs() {
+  const events = [];
+  state.users.forEach(user => {
+    events.push({
+      sortKey: user.txn_count,
+      title: `${user.full_name} account is active`,
+      detail: `Balance: ${formatCurrency(user.balance)} | Transactions: ${user.txn_count}`
+    });
+  });
+  state.transactions.slice(0, 10).forEach(txn => {
+    events.push({
+      sortKey: 1000,
+      title: `${txn.type} transaction completed`,
+      detail: `${txn.user} | ${formatCurrency(Math.abs(txn.amount))} | ${txn.timestamp}`
+    });
+  });
+
+  const q = state.searchTerm.trim().toLowerCase();
+  const filtered = events.filter(event => !q || `${event.title} ${event.detail}`.toLowerCase().includes(q)).slice(0, 20);
+  document.getElementById('auditCountBadge').textContent = `${filtered.length} events`;
+  document.getElementById('auditLogList').innerHTML = filtered.length ? filtered.map(event => `
+    <div class="adm-list-item">
+      <div class="adm-list-item-icon"><i class="fas fa-shield-halved"></i></div>
+      <div>
+        <strong>${escapeHtml(event.title)}</strong>
+        <p>${escapeHtml(event.detail)}</p>
+      </div>
+    </div>
+  `).join('') : '<p class="adm-empty-msg">No audit events match your search</p>';
+}
+
+function applyFilters() {
+  renderAccounts();
+  renderCustomers();
+  renderTransactions();
+  renderAuditLogs();
+  renderRecentTransactions();
+}
+
+async function fetchJson(url, options = {}) {
+  const response = await fetch(url, {
+    headers: { 'Content-Type': 'application/json' },
+    ...options
+  });
+  const payload = await response.json();
+  if (!response.ok || payload.success === false) {
+    throw new Error(payload.message || 'Request failed');
+  }
+  return payload;
+}
+
+async function loadStats() {
+  const payload = await fetchJson('{{ url_for("admin_api_stats") }}');
+  state.stats = payload;
+  renderStats();
+  renderCharts();
+  buildNotifications();
+}
+
+async function loadUsers() {
+  const query = state.searchTerm.trim();
+  const suffix = query ? `?q=${encodeURIComponent(query)}` : '';
+  const payload = await fetchJson(`{{ url_for("admin_api_users") }}${suffix}`);
+  state.users = payload.users || [];
+}
+
+async function loadTransactions() {
+  const payload = await fetchJson('{{ url_for("admin_api_transactions") }}');
+  state.transactions = payload.transactions || [];
+}
+
+async function refreshAll(showMessage = false) {
+  try {
+    await Promise.all([loadStats(), loadUsers(), loadTransactions()]);
+    applyFilters();
+    renderLineChart(); // rebuild chart with fresh transaction data
+    if (showMessage) showToast('Dashboard data refreshed.');
+  } catch (error) {
+    showToast(error.message, true);
+  }
+}
+
+async function updateBalance(username, action) {
+  const raw = window.prompt(`${action === 'add' ? 'Enter amount to add for' : 'Enter new balance for'} ${username}:`);
+  if (raw === null) return;
+  const amount = Number(raw);
+  if (!Number.isFinite(amount) || amount < 0) {
+    showToast('Please enter a valid non-negative amount.', true);
+    return;
+  }
+  try {
+    await fetchJson(`{{ url_for("admin_adjust_balance", username="__USER__") }}`.replace('__USER__', encodeURIComponent(username)), {
+      method: 'POST',
+      body: JSON.stringify({ amount, action })
+    });
+    await refreshAll();
+    showToast(`Balance updated for ${username}.`);
+  } catch (error) {
+    showToast(error.message, true);
+  }
+}
+
+async function deleteUser(username) {
+  if (!window.confirm(`Delete user "${username}"? This cannot be undone.`)) return;
+  try {
+    await fetchJson(`{{ url_for("admin_delete_user", username="__USER__") }}`.replace('__USER__', encodeURIComponent(username)), {
+      method: 'DELETE'
+    });
+    await refreshAll();
+    showToast(`User ${username} deleted.`);
+  } catch (error) {
+    showToast(error.message, true);
+  }
+}
+
+navItems.forEach(item => {
+  item.addEventListener('click', event => {
+    event.preventDefault();
+    setActiveSection(item.dataset.section, item.dataset.title, item.dataset.subtitle);
+  });
+});
+
+document.querySelectorAll('[data-section-jump]').forEach(button => {
+  button.addEventListener('click', () => {
+    const nav = navItems.find(item => item.dataset.section === button.dataset.sectionJump);
+    if (nav) nav.click();
+  });
+});
+
+document.getElementById('notifButton').addEventListener('click', () => {
+  notifPanel.classList.toggle('adm-popover--open');
+  profilePanel.classList.remove('adm-popover--open');
+});
+
+document.getElementById('profileButton').addEventListener('click', () => {
+  profilePanel.classList.toggle('adm-popover--open');
+  notifPanel.classList.remove('adm-popover--open');
+});
+
+document.addEventListener('click', event => {
+  if (!event.target.closest('#notifButton') && !event.target.closest('#notifPanel')) {
+    notifPanel.classList.remove('adm-popover--open');
+  }
+  if (!event.target.closest('#profileButton') && !event.target.closest('#profilePanel')) {
+    profilePanel.classList.remove('adm-popover--open');
+  }
+});
+
+globalSearch.addEventListener('input', async event => {
+  state.searchTerm = event.target.value;
+  await loadUsers();
+  applyFilters();
+});
+
+transactionTypeFilter.addEventListener('change', event => {
+  state.transactionFilter = event.target.value;
+  renderTransactions();
+});
+
+document.getElementById('createUserForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  const form = new FormData(event.currentTarget);
+  try {
+    await fetchJson('{{ url_for("admin_create_user") }}', {
+      method: 'POST',
+      body: JSON.stringify({
+        full_name: form.get('full_name'),
+        username: form.get('username'),
+        phone_number: form.get('phone_number'),
+        password: form.get('password')
+      })
+    });
+    event.currentTarget.reset();
+    await refreshAll();
+    showToast('Customer account created.');
+  } catch (error) {
+    showToast(error.message, true);
+  }
+});
+
+document.getElementById('depositsTableBody').addEventListener('click', event => {
+  const btn = event.target.closest('button[data-action="view-depositor"]');
+  if (btn) openDepositorProfile(btn.dataset.user);
+});
+
+document.getElementById('accountsTableBody').addEventListener('click', event => {
+  const button = event.target.closest('button[data-action]');
+  if (!button) return;
+  const username = button.dataset.user;
+  if (button.dataset.action === 'add-balance') updateBalance(username, 'add');
+  if (button.dataset.action === 'set-balance') updateBalance(username, 'set');
+  if (button.dataset.action === 'delete-user') deleteUser(username);
+});
+
+document.getElementById('refreshButton').addEventListener('click', () => refreshAll(true));
+document.getElementById('settingsRefreshButton').addEventListener('click', () => refreshAll(true));
+
+function clearDashboardFilters() {
+  state.searchTerm = '';
+  state.transactionFilter = 'ALL';
+  globalSearch.value = '';
+  transactionTypeFilter.value = 'ALL';
+  refreshAll();
+}
+
+document.getElementById('clearSearchButton').addEventListener('click', clearDashboardFilters);
+document.getElementById('settingsClearButton').addEventListener('click', clearDashboardFilters);
+
+document.getElementById('profileButton').addEventListener('keydown', event => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    document.getElementById('profileButton').click();
+  }
+});
+
+renderStats();
+renderCharts();
+buildNotifications();
+refreshAll();
+</script>
+</body>
+</html>
