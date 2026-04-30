@@ -12,6 +12,7 @@
     :root {
       --primary: #2563eb;
       --primary-soft: #dbeafe;
+      --primary-gradient: linear-gradient(135deg, #2563eb, #1d4ed8);
       --bg: #f5f7fb;
       --surface: #ffffff;
       --surface-soft: #f8fbff;
@@ -22,14 +23,25 @@
       --line: #e2e8f0;
       --green: #16a34a;
       --green-soft: #dcfce7;
+      --green-gradient: linear-gradient(135deg, #16a34a, #15803d);
       --purple: #7c3aed;
       --purple-soft: #ede9fe;
+      --purple-gradient: linear-gradient(135deg, #7c3aed, #6d28d9);
       --orange: #ea580c;
       --orange-soft: #ffedd5;
+      --orange-gradient: linear-gradient(135deg, #ea580c, #dc2626);
       --red: #dc2626;
       --red-soft: #fee2e2;
+      --red-gradient: linear-gradient(135deg, #dc2626, #b91c1c);
       --shadow: 0 12px 34px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 25px 50px rgba(15, 23, 42, 0.12);
+      --shadow-xl: 0 35px 60px rgba(15, 23, 42, 0.15);
       --radius: 16px;
+      --radius-lg: 20px;
+      --radius-xl: 24px;
+      --blur: blur(20px);
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-fast: all 0.15s ease;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -47,6 +59,7 @@
       display: flex;
     }
 
+    /* ── Sidebar ── */
     .sidebar {
       width: 270px;
       position: fixed;
@@ -113,12 +126,14 @@
 
     .logout-wrap { margin-top: auto; padding-top: 20px; }
 
+    /* ── Main ── */
     .main {
       flex: 1;
       margin-left: 270px;
       padding: 28px;
     }
 
+    /* ── Header ── */
     .header {
       position: relative;
       background: rgba(255, 255, 255, 0.88);
@@ -187,6 +202,7 @@
       outline: 2px solid rgba(37,99,235,0.25);
     }
 
+    /* ── Popover ── */
     .popover {
       position: absolute;
       top: calc(100% + 12px);
@@ -202,6 +218,7 @@
     }
 
     .popover.open { display: block; }
+
     .popover-head {
       display: flex;
       justify-content: space-between;
@@ -231,6 +248,7 @@
       line-height: 1.5;
     }
 
+    /* ── Page Sections ── */
     .page-section {
       display: none;
       flex-direction: column;
@@ -239,21 +257,45 @@
 
     .page-section.active { display: flex; }
 
+    /* ── Cards Grid ── */
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 18px;
     }
 
+    /* ── Base card/panel styles ── */
     .balance-card,
     .panel,
     .table-panel,
     .module-card {
       background: var(--surface);
-      border-radius: var(--radius);
+      border-radius: var(--radius-lg);
       border: 1px solid rgba(226, 232, 240, 0.82);
       box-shadow: var(--shadow);
-      transition: 0.2s ease;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .balance-card::before,
+    .panel::before,
+    .module-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--primary-gradient);
+      opacity: 0;
+      transition: var(--transition-fast);
+    }
+
+    .balance-card:hover::before,
+    .panel:hover::before,
+    .module-card:hover::before {
+      opacity: 1;
     }
 
     .balance-card,
@@ -263,8 +305,13 @@
     .balance-card:hover,
     .panel:hover,
     .table-panel:hover,
-    .module-card:hover { transform: translateY(-2px); }
+    .module-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: rgba(37, 99, 235, 0.2);
+    }
 
+    /* ── Card internals ── */
     .card-top {
       display: flex;
       justify-content: space-between;
@@ -282,11 +329,11 @@
       font-size: 1rem;
     }
 
-    .blue { background: var(--primary-soft); color: var(--primary); }
-    .green { background: var(--green-soft); color: var(--green); }
-    .purple { background: var(--purple-soft); color: var(--purple); }
-    .orange { background: var(--orange-soft); color: var(--orange); }
-    .red { background: var(--red-soft); color: var(--red); }
+    .blue   { background: var(--primary-soft); color: var(--primary); }
+    .green  { background: var(--green-soft);   color: var(--green); }
+    .purple { background: var(--purple-soft);  color: var(--purple); }
+    .orange { background: var(--orange-soft);  color: var(--orange); }
+    .red    { background: var(--red-soft);     color: var(--red); }
 
     .eye-toggle {
       border: none;
@@ -297,51 +344,41 @@
     }
 
     .balance-label { color: var(--muted); font-size: 0.84rem; font-weight: 600; margin-bottom: 8px; }
-    .balance-amount { font-size: 1.55rem; font-weight: 800; letter-spacing: -0.03em; }
+
+    .balance-amount {
+      font-size: 1.55rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
     .balance-sub { margin-top: 8px; font-size: 0.8rem; color: var(--muted); }
 
+    /* ── Content Grid (3-col) ── */
     .content-grid {
       display: grid;
       grid-template-columns: 1.1fr 1.2fr 0.9fr;
       gap: 18px;
     }
 
+    /* ── Bottom Grid (3-col matching screenshot 1) ── */
     .bottom-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 18px;
     }
 
-    .bottom-grid > article {
-      position: relative;
-    }
-
-    .bottom-grid .panel-side-label {
-      position: absolute;
-      left: -1.6rem;
-      top: 24px;
-      transform: rotate(-90deg);
-      transform-origin: left top;
-      font-size: 0.72rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--muted);
-      opacity: 0.75;
-    }
-
-    .bottom-grid .receipt-panel,
-    .bottom-grid .panel {
-      padding-left: 3.5rem;
-    }
-
+    /* ── Panel head ── */
     .panel-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
       margin-bottom: 18px;
-    
+    }
 
     .panel-title { font-size: 1rem; font-weight: 800; }
 
@@ -356,6 +393,7 @@
       cursor: pointer;
     }
 
+    /* ── Lists ── */
     .account-list,
     .transaction-list,
     .alerts-list,
@@ -401,11 +439,7 @@
       transform: translateY(-1px);
     }
 
-    .transaction-item.active {
-      border-color: #2563eb;
-      background: #eef5ff;
-    }
-
+    /* ── Account item layout ── */
     .account-top,
     .transaction-top,
     .alert-top {
@@ -435,6 +469,7 @@
       line-height: 1.5;
     }
 
+    /* ── Status chips ── */
     .status-chip {
       display: inline-flex;
       align-items: center;
@@ -448,6 +483,7 @@
     .status-active { background: var(--green-soft); color: var(--green); }
     .status-review { background: #fef3c7; color: #b45309; }
 
+    /* ── Transaction item ── */
     .txn-icon,
     .alert-icon {
       width: 38px;
@@ -463,30 +499,98 @@
       display: flex;
       align-items: center;
       gap: 12px;
+      transition: var(--transition);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
     }
 
-    .transaction-main { flex: 1; }
-    .transaction-amount { font-weight: 800; font-size: 0.92rem; text-align: right; }
-    .credit { color: var(--green); }
-    .debit { color: var(--red); }
+    .transaction-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--primary);
+      transform: scaleY(0);
+      transition: var(--transition-fast);
+      border-radius: 0 2px 2px 0;
+    }
 
+    .transaction-item.active::before { transform: scaleY(1); }
+
+    .transaction-item:hover {
+      border-color: rgba(37, 99, 235, 0.3);
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.02), rgba(37, 99, 235, 0.05));
+      transform: translateX(4px);
+    }
+
+    .transaction-amount {
+      font-weight: 700;
+      font-size: 0.92rem;
+      white-space: nowrap;
+    }
+
+    .transaction-amount.credit { color: var(--green); }
+    .transaction-amount.debit  { color: var(--red); }
+
+    .transaction-controls {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .transaction-view-tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      background: rgba(37, 99, 235, 0.08);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      white-space: nowrap;
+      transition: 0.2s ease;
+    }
+
+    .transaction-item:hover .transaction-view-tag {
+      background: rgba(37, 99, 235, 0.14);
+    }
+
+    .transaction-main { flex: 1; min-width: 0; }
+
+    /* ── Quick actions ── */
     .quick-grid,
     .module-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
     }
+    /*quick reaction buttons spacing fix*/
+    .quick-actions-grid {
+      grid-template-columns: 1fr;
+      gap: 22px;
+      justify-items: stretch;
+      align-items: stretch;
+      padding: 8px 0;
+      border-top: 1px solid rgba(148, 163, 184, 0.14);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+    }
 
     .quick-action,
     .module-action,
     .table-row-btn {
-      border: 1px solid #ebf1f8;
-      background: linear-gradient(180deg, #ffffff, #f8fbff);
-      border-radius: 16px;
-      padding: 18px 12px;
+      border: 1px solid rgba(148, 163, 14, 0.12);
+      background: linear-gradient(180deg, #ffffff, #eef4ff);
+      border-radius: 22px;
+      padding: 22px 18px;
+      min-height: 150px;
+      width: 100%;
       text-align: center;
-      transition: 0.18s ease;
-      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.04);
+      transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
     }
 
     .quick-action i,
@@ -512,11 +616,11 @@
 
     .clicked { transform: scale(0.97); }
 
-    /* Premium Quick Action Buttons */
+    /* ── Premium Quick Action Buttons ── */
     .quick-action.premium-btn {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 251, 255, 0.9));
-      border: 1.5px solid rgba(226, 232, 240, 0.6);
-      box-shadow: 0 12px 32px rgba(37, 99, 235, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,251,255,0.9));
+      border: 1.5px solid rgba(226,232,240,0.6);
+      box-shadow: 0 12px 32px rgba(37,99,235,0.08), inset 0 1px 0 rgba(255,255,255,0.6);
       position: relative;
       overflow: hidden;
     }
@@ -525,283 +629,61 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.4) 100%);
+      background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.4) 100%);
       pointer-events: none;
     }
 
     .quick-action.premium-btn:hover {
       transform: translateY(-4px);
-      border-color: rgba(37, 99, 235, 0.3);
-      box-shadow: 0 20px 48px rgba(37, 99, 235, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      border-color: rgba(37,99,235,0.3);
+      box-shadow: 0 20px 48px rgba(37,99,235,0.15), inset 0 1px 0 rgba(255,255,255,0.8);
     }
 
-    .quick-action.premium-btn:active {
-      transform: translateY(-2px);
-    }
+    .quick-action.premium-btn:active { transform: translateY(-2px); }
 
-    .deposit-btn i { color: #16a34a; }
-    .withdraw-btn i { color: #dc2626; }
-    .send-btn i { color: #7c3aed; }
+    .deposit-btn  i { background: rgba(22,163,74,0.12);  color: #16a34a; }
+    .withdraw-btn i { background: rgba(220,38,38,0.12);  color: #dc2626; }
+    .send-btn     i { background: rgba(124,58,237,0.12); color: #7c3aed; }
+    .receipt-btn  i { background: rgba(59,130,246,0.12); color: #3b82f6; }
 
-    .premium-btn i {
-      transition: 0.3s ease;
-    }
+    .premium-btn i { transition: 0.3s ease; }
+    .quick-action.premium-btn:hover i { transform: scale(1.15); }
 
-    .deposit-btn i {
-      background: rgba(22, 163, 74, 0.12);
-      color: #16a34a;
-    }
-
-    .withdraw-btn i {
-      background: rgba(220, 38, 38, 0.12);
-      color: #dc2626;
-    }
-
-    .send-btn i {
-      background: rgba(124, 58, 237, 0.12);
-      color: #7c3aed;
-    }
-
-    .quick-action.premium-btn:hover i {
-      transform: scale(1.15);
-    }
-
-    /* Premium Receipt Panel */
-    .receipt-panel {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 255, 0.95));
-      border: 1.5px solid rgba(226, 232, 240, 0.8);
-      border-radius: 20px;
-      padding: 28px;
-      box-shadow: 0 20px 48px rgba(37, 99, 235, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(20px);
-      animation: receiptSlideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    @keyframes receiptSlideUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .receipt-header {
+    /* ── Alert items ── */
+    .alert-item {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 12px;
-      margin-bottom: 20px;
-      position: relative;
     }
 
-    .receipt-header i {
-      font-size: 1.5rem;
-      color: var(--primary);
-      background: var(--primary-soft);
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
-    }
-
-    .receipt-header h2 {
-      font-size: 1.2rem;
-      font-weight: 800;
-      color: var(--text);
-      margin: 0;
-    }
-
-    .receipt-divider {
-      height: 1px;
-      background: linear-gradient(90deg, transparent 0%, rgba(37, 99, 235, 0.2) 50%, transparent 100%);
-      margin: 20px 0;
-    }
-
-    .receipt-divider-subtle {
-      height: 1px;
-      background: rgba(226, 232, 240, 0.6);
-      margin: 16px 0;
-    }
-
-    .receipt-content {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .receipt-section {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .receipt-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-    }
-
-    .receipt-label {
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-    }
-
-    .receipt-value {
-      font-size: 0.92rem;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    .receipt-amount {
-      font-size: 2rem;
-      font-weight: 800;
-      color: var(--primary);
-      letter-spacing: -0.02em;
-    }
-
-    .receipt-ref-id {
-      font-family: 'Courier New', monospace;
-      font-size: 0.85rem;
-      letter-spacing: 0.05em;
-    }
-
-    .receipt-status {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: linear-gradient(135deg, rgba(22, 163, 74, 0.08), rgba(22, 163, 74, 0.04));
-      border: 1px solid rgba(22, 163, 74, 0.2);
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin: 12px 0;
-      font-weight: 700;
-      color: #166534;
-    }
-
-    .receipt-status i {
-      font-size: 1.1rem;
-      color: #16a34a;
-    }
-
-    .receipt-download-btn {
-      width: 100%;
-      border: none;
-      background: linear-gradient(135deg, var(--primary), #1d4ed8);
-      color: #fff;
-      border-radius: 14px;
-      padding: 14px 18px;
-      font-weight: 800;
-      font-size: 0.92rem;
-      cursor: pointer;
-      transition: 0.3s ease;
-      margin-top: 12px;
-      box-shadow: 0 12px 32px rgba(37, 99, 235, 0.25);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
-
-    .receipt-download-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 16px 48px rgba(37, 99, 235, 0.35);
-    }
-
-    .receipt-download-btn:active {
-      transform: translateY(0);
-    }
-
-    @media (max-width: 640px) {
-      .receipt-row {
-        grid-template-columns: 1fr;
-      }
-
-      .receipt-panel {
-        padding: 20px;
-      }
-
-      .receipt-amount {
-        font-size: 1.5rem;
-      }
-
-      .receipt-header {
-        gap: 10px;
-      }
-
-      .receipt-header h2 {
-        font-size: 1.05rem;
-      }
-    }
-
-
-    .donut-wrap {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-      flex-wrap: wrap;
-    }
-
-    .donut-chart {
-      width: 190px;
-      aspect-ratio: 1;
-      border-radius: 50%;
-      background: conic-gradient(#2563eb 0 38%, #16a34a 38% 62%, #7c3aed 62% 84%, #ea580c 84% 100%);
-      position: relative;
+    .alert-icon {
       flex-shrink: 0;
     }
 
-    .donut-chart::after {
-      content: "Spend";
-      position: absolute;
-      inset: 24px;
-      border-radius: 50%;
-      background: #fff;
-      display: grid;
-      place-items: center;
-      color: var(--text);
-      font-weight: 800;
-      font-size: 1rem;
-      box-shadow: inset 0 0 0 1px #eef2f7;
+    .alert-body { flex: 1; min-width: 0; }
+    .alert-title { font-weight: 700; font-size: 0.88rem; }
+    .alert-text  { color: var(--muted); font-size: 0.78rem; margin-top: 4px; line-height: 1.5; }
+
+    .alert-dismiss {
+      border: none;
+      background: none;
+      color: var(--primary);
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+      padding: 0;
     }
 
-    .legend {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      flex: 1;
-      min-width: 180px;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      font-size: 0.86rem;
-      color: var(--muted);
-    }
-
-    .legend-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--text);
-      font-weight: 600;
-    }
-
-    .dot { width: 11px; height: 11px; border-radius: 50%; }
-
+    /* ── Security card ── */
     .security-card {
       background: linear-gradient(135deg, #0f172a, #1d4ed8);
       color: #fff;
       overflow: hidden;
       position: relative;
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow);
     }
 
     .security-card::before {
@@ -810,14 +692,17 @@
       width: 180px;
       height: 180px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255,255,255,0.08);
       top: -70px;
       right: -60px;
+      pointer-events: none;
     }
+
+    .security-card .panel-title { color: #fff; position: relative; }
 
     .security-card p {
       margin: 10px 0 18px;
-      color: rgba(255, 255, 255, 0.82);
+      color: rgba(255,255,255,0.82);
       font-size: 0.86rem;
       line-height: 1.6;
       position: relative;
@@ -830,15 +715,73 @@
       border-radius: 12px;
       padding: 12px 16px;
       font-weight: 800;
+      font-size: 0.9rem;
       transition: 0.2s ease;
+      cursor: pointer;
       position: relative;
     }
 
-    .security-btn.enabled {
-      background: #bbf7d0;
-      color: #166534;
+    .security-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+    .security-btn.enabled { background: #bbf7d0; color: #166534; }
+
+    /* ── Donut chart ── */
+    .donut-wrap {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
     }
 
+    .donut-chart {
+      width: 150px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: conic-gradient(#2563eb 0 38%, #16a34a 38% 62%, #7c3aed 62% 84%, #ea580c 84% 100%);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .donut-chart::after {
+      content: "Spend";
+      position: absolute;
+      inset: 20px;
+      border-radius: 50%;
+      background: #fff;
+      display: grid;
+      place-items: center;
+      color: var(--text);
+      font-weight: 800;
+      font-size: 0.9rem;
+      box-shadow: inset 0 0 0 1px #eef2f7;
+    }
+
+    .legend {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+
+    .legend-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── Table panel ── */
     .table-panel { padding: 0; overflow: hidden; }
 
     .table-head {
@@ -891,6 +834,7 @@
       box-shadow: none;
     }
 
+    /* ── Module layout ── */
     .module-layout {
       display: grid;
       grid-template-columns: 1.1fr 0.9fr;
@@ -923,6 +867,7 @@
 
     .hidden-balance { letter-spacing: 0.18em; }
 
+    /* ── Modals ── */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -953,6 +898,7 @@
     }
 
     .modal-head h3 { font-size: 1rem; font-weight: 800; }
+
     .modal-close {
       border: none;
       background: #f8fafc;
@@ -971,32 +917,397 @@
 
     .receipt-list { display: flex; flex-direction: column; gap: 12px; }
 
+    /* ── Receipt Modal Premium Styling ── */
+    .receipt-modal .modal { max-width: 600px; }
+    
+    .receipt-header {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      padding: 28px 24px;
+      border-radius: 0;
+    }
+
+    .receipt-header h3 {
+      font-size: 1.3rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .receipt-header p {
+      color: rgba(255,255,255,0.8);
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    .receipt-filter {
+      display: flex;
+      gap: 10px;
+      padding: 16px 24px;
+      border-bottom: 1px solid #e2e8f0;
+      background: #f8fbff;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      border: 1px solid #dbeafe;
+      background: #fff;
+      color: #2563eb;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .filter-btn:hover { background: #dbeafe; }
+    .filter-btn.active {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      border-color: #2563eb;
+    }
+
+    .receipt-item {
+      padding: 16px 20px;
+      border-bottom: 1px solid #edf2f7;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: 0.15s ease;
+    }
+
+    .receipt-item:hover { background: #f8fbff; }
+
+    .receipt-item {
+      cursor: pointer;
+    }
+
+    .receipt-item-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
+    }
+
+    .receipt-item-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .receipt-item-details {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .receipt-item-type {
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+
+    .receipt-item-meta {
+      font-size: 0.8rem;
+      color: #64748b;
+      line-height: 1.4;
+    }
+
+    .receipt-item-amount {
+      font-weight: 800;
+      font-size: 0.98rem;
+      white-space: nowrap;
+    }
+
+    .receipt-item-amount.credit { color: #16a34a; }
+    .receipt-item-amount.debit { color: #dc2626; }
+
+    .receipt-empty {
+      padding: 60px 24px;
+      text-align: center;
+      color: #64748b;
+    }
+
+    .receipt-empty i {
+      font-size: 3rem;
+      color: #cbd5e1;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .receipt-empty p { margin: 8px 0; font-size: 0.95rem; }
+    .receipt-empty small { color: #94a3b8; font-size: 0.85rem; }
+
+    .receipt-footer {
+      padding: 16px 24px;
+      border-top: 1px solid #e2e8f0;
+      background: #f8fbff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    .receipt-badge {
+      display: inline-block;
+      background: #dcfce7;
+      color: #16a34a;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    /* ── Receipt Detail Modal ── */
+    .receipt-detail-header {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      padding: 32px 24px;
+      text-align: center;
+      border-radius: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .receipt-detail-header::before {
+      content: "";
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+      top: -50px;
+      right: -50px;
+      pointer-events: none;
+    }
+
+    .receipt-detail-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      margin: 0 auto 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .receipt-detail-header h3 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin: 0 0 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .receipt-detail-header p {
+      color: rgba(255,255,255,0.9);
+      margin: 0;
+      font-size: 0.95rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .receipt-detail-amount {
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-top: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .receipt-detail-body {
+      padding: 32px 24px;
+    }
+
+    .receipt-detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    .receipt-detail-row:last-child { border-bottom: none; }
+
+    .receipt-detail-label {
+      color: #64748b;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .receipt-detail-value {
+      color: #0f172a;
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .receipt-detail-value.highlight {
+      color: #2563eb;
+    }
+
+    .receipt-detail-footer {
+      padding: 20px 24px;
+      border-top: 1px solid #edf2f7;
+      background: #f8fbff;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .receipt-btn {
+      border: none;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .receipt-btn-primary {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+    }
+
+    .receipt-btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(37,99,235,0.3);
+    }
+
+    .receipt-btn-secondary {
+      background: #fff;
+      color: #2563eb;
+      border: 1.5px solid #dbeafe;
+    }
+
+    .receipt-btn-secondary:hover {
+      background: #dbeafe;
+    }
+
+    .receipt-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .receipt-status.success {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+
+    .receipt-status.pending {
+      background: #fef3c7;
+      color: #ca8a04;
+    }
+
+    .receipt-status.failed {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    /* ── Toast ── */
     .toast {
       position: fixed;
       right: 22px;
       bottom: 22px;
-      background: #0f172a;
+      background: linear-gradient(135deg, var(--sidebar), var(--sidebar-2));
       color: #fff;
       padding: 13px 16px;
-      border-radius: 14px;
-      box-shadow: 0 18px 34px rgba(15, 23, 42, 0.18);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
       opacity: 0;
       pointer-events: none;
-      transform: translateY(12px);
-      transition: 0.2s ease;
+      transform: translateY(12px) scale(0.9);
+      transition: var(--transition);
       z-index: 80;
       font-size: 0.84rem;
       font-weight: 700;
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: var(--blur);
     }
 
-    .toast.show {
-      opacity: 1;
-      transform: translateY(0);
+    .toast.show  { opacity: 1; transform: translateY(0) scale(1); }
+    .toast.success { background: var(--green-gradient);  border-color: rgba(22,163,74,0.3); }
+    .toast.error   { background: var(--red-gradient);    border-color: rgba(220,38,38,0.3); }
+
+    /* ── Loading overlay ── */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, var(--sidebar), var(--sidebar-2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      transition: var(--transition);
     }
 
+    .loading-overlay.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-content { text-align: center; color: #fff; }
+
+    .loading-content h3 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin: 20px 0 10px;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .loading-content p { font-size: 0.9rem; opacity: 0.8; margin: 0; }
+
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255,255,255,0.1);
+      border-top: 4px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    /* ── Responsive ── */
     @media (max-width: 1280px) {
-      .cards-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .content-grid, .bottom-grid, .module-layout { grid-template-columns: 1fr; }
+      .cards-grid   { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .content-grid { grid-template-columns: 1fr; }
+      .bottom-grid  { grid-template-columns: 1fr; }
+      .module-layout{ grid-template-columns: 1fr; }
     }
 
     @media (max-width: 920px) {
@@ -1025,723 +1336,1000 @@
       .donut-wrap { justify-content: center; }
       .popover { width: min(320px, calc(100vw - 36px)); }
     }
+
+    /* ── Password strength bar ── */
+    #pwStrengthBar { height: 100%; border-radius: 99px; transition: 0.3s; }
   </style>
 </head>
 <body>
-  <div class="app-shell">
-    <aside class="sidebar" id="sidebar">
-      <div class="logo">
-        <span style="color:#fbbf24;font-weight:900;">PEV</span><span style="color:#fff;font-weight:700;"> Banking</span>
+
+<div id="toast" class="toast"></div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-content">
+    <div class="loading-spinner"></div>
+    <h3>Welcome to PEV Banking</h3>
+    <p>Loading your dashboard...</p>
+  </div>
+</div>
+
+<div class="app-shell">
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">
+      <span style="color:#fbbf24;font-weight:900;">PEV</span><span style="color:#fff;font-weight:700;"> Banking</span>
+    </div>
+
+    <ul class="nav-list">
+      <li><button class="nav-btn active" data-section="dashboard"
+            data-title="Welcome back, {{ full_name }}"
+            data-subtitle="Your banking overview is updated and ready.">
+          <i class="fas fa-chart-pie"></i><span>Dashboard</span>
+        </button></li>
+      <li><button class="nav-btn" data-section="accounts"
+            data-title="Accounts"
+            data-subtitle="Manage your linked products and balances.">
+          <i class="fas fa-building-columns"></i><span>Accounts</span>
+        </button></li>
+      <li><button class="nav-btn" data-section="fund-transfer"
+            data-title="Fund Transfer"
+            data-subtitle="Send money using your verified account.">
+          <i class="fas fa-money-bill-transfer"></i><span>Fund Transfer</span>
+        </button></li>
+      <li><button class="nav-btn" data-section="profile-settings"
+            data-title="Profile Settings"
+            data-subtitle="Keep your contact and security details updated.">
+          <i class="fas fa-user-gear"></i><span>Profile Settings</span>
+        </button></li>
+      <li><button class="nav-btn" data-section="support"
+            data-title="Support"
+            data-subtitle="Find help, report issues, and request assistance.">
+          <i class="fas fa-headset"></i><span>Support</span>
+        </button></li>
+    </ul>
+
+    <div class="logout-wrap">
+      <button class="logout-btn" onclick="window.location.href='{{ url_for("logout") }}'">
+        <i class="fas fa-right-from-bracket"></i><span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main class="main">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <div>
+          <h1 id="pageHeading">Welcome back, {{ full_name }}</h1>
+          <p id="pageSubtitle">Your banking overview is updated and ready.</p>
+        </div>
       </div>
-
-      <ul class="nav-list">
-        <li><button class="nav-btn active" data-section="dashboard" data-title="Welcome back, {{ full_name }}" data-subtitle="Your banking overview is updated and ready."><i class="fas fa-chart-pie"></i><span>Dashboard</span></button></li>
-        <li><button class="nav-btn" data-section="accounts" data-title="Accounts" data-subtitle="Manage your linked products and balances."><i class="fas fa-building-columns"></i><span>Accounts</span></button></li>
-        <li><button class="nav-btn" data-section="fund-transfer" data-title="Fund Transfer" data-subtitle="Send money using your verified account."><i class="fas fa-money-bill-transfer"></i><span>Fund Transfer</span></button></li>
-        <li><button class="nav-btn" data-section="profile-settings" data-title="Profile Settings" data-subtitle="Keep your contact and security details updated."><i class="fas fa-user-gear"></i><span>Profile Settings</span></button></li>
-        <li><button class="nav-btn" data-section="support" data-title="Support" data-subtitle="Find help, report issues, and request assistance."><i class="fas fa-headset"></i><span>Support</span></button></li>
-      </ul>
-
-      <div class="logout-wrap">
-        <button class="logout-btn" onclick="window.location.href='{{ url_for('logout') }}'">
-          <i class="fas fa-right-from-bracket"></i><span>Logout</span>
+      <div class="header-right">
+        <button class="notify" id="notifyBtn" type="button" aria-label="Notifications">
+          <i class="fas fa-bell"></i>
+          <span class="notify-badge"></span>
         </button>
+        <div class="avatar" id="headerAvatar" style="cursor:pointer;"
+             onclick="document.querySelector('.nav-btn[data-section=profile-settings]').click()"
+             title="Profile Settings">
+          {% if photo %}
+            <img src="{{ photo }}" alt="avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+          {% else %}
+            {{ full_name[0].upper() }}
+          {% endif %}
+        </div>
+
+        <!-- Notifications Popover -->
+        <div class="popover" id="notifyPopover">
+          <div class="popover-head">
+            <h3>Notifications</h3>
+            <button class="text-btn" id="markAlertsRead" type="button">Mark all read</button>
+          </div>
+          <div class="popover-list" id="notifyList">
+            <div class="popover-item">
+              <strong>Security reminder</strong>
+              <p>Keep your phone number and password protected at all times.</p>
+            </div>
+            <div class="popover-item">
+              <strong>Profile available</strong>
+              <p>Your account profile can be reviewed from Profile Settings.</p>
+            </div>
+            <div class="popover-item">
+              <strong>Transactions synced</strong>
+              <p>Your latest banking activity is reflected in the dashboard table.</p>
+            </div>
+          </div>
+        </div>
       </div>
-    </aside>
+    </header>
 
-    <main class="main">
-      <header class="header">
-        <div class="header-left">
-          <div>
-            <h1 id="pageHeading">Welcome back, {{ full_name }}</h1>
-            <p id="pageSubtitle">Your banking overview is updated and ready.</p>
+    <!-- ════════════════════════════════════════
+         DASHBOARD SECTION
+    ════════════════════════════════════════ -->
+    <section class="page-section active" id="section-dashboard">
+
+      <!-- Balance Cards -->
+      <div class="cards-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));">
+        <article class="balance-card">
+          <div class="card-top">
+            <div class="card-icon blue"><i class="fas fa-wallet"></i></div>
+            <button class="eye-toggle" id="toggleBalances" type="button"><i class="fas fa-eye"></i></button>
           </div>
-        </div>
-        <div class="header-right">
-          <button class="notify" id="notifyBtn" type="button" aria-label="Notifications">
-            <i class="fas fa-bell"></i>
-            <span class="notify-badge"></span>
-          </button>
-          <div class="avatar" id="headerAvatar" style="cursor:pointer;" onclick="document.querySelector('.nav-btn[data-section=profile-settings]').click()" title="Profile Settings">
-            {% if photo %}
-              <img src="{{ photo }}" alt="avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
-            {% else %}
-              {{ full_name[0].upper() }}
-            {% endif %}
+          <div class="balance-label">Total Balance</div>
+          <div class="balance-amount balance-value" data-value="{{ '%.2f'|format(balance) }}">PHP {{ "%.2f"|format(balance) }}</div>
+          <div class="balance-sub">Savings + Current combined</div>
+        </article>
+
+        <article class="balance-card">
+          <div class="card-top">
+            <div class="card-icon green"><i class="fas fa-piggy-bank"></i></div>
           </div>
+          <div class="balance-label">Savings Account</div>
+          <div class="balance-amount balance-value" data-value="{{ '%.2f'|format(savings_balance) }}">PHP {{ "%.2f"|format(savings_balance) }}</div>
+          <div class="balance-sub">Primary savings wallet</div>
+        </article>
 
-          <div class="popover" id="notifyPopover">
-            <div class="popover-head">
-              <h3>Notifications</h3>
-              <button class="text-btn" id="markAlertsRead" type="button">Mark all read</button>
+        <article class="balance-card">
+          <div class="card-top">
+            <div class="card-icon purple"><i class="fas fa-building-columns"></i></div>
+          </div>
+          <div class="balance-label">Current Account</div>
+          <div class="balance-amount balance-value" data-value="{{ '%.2f'|format(current_balance) }}">PHP {{ "%.2f"|format(current_balance) }}</div>
+          <div class="balance-sub">Daily transactions wallet</div>
+        </article>
+
+        <article class="balance-card" style="background:linear-gradient(135deg,#0f172a,#1e3a5f);color:#fff;">
+          <div class="card-top">
+            <div class="card-icon" style="background:rgba(251,191,36,.15);color:#fbbf24;"><i class="fas fa-shield-halved"></i></div>
+          </div>
+          <div class="balance-label" style="color:rgba(255,255,255,.6);">Account Status</div>
+          <div class="balance-amount" style="font-size:1.1rem;color:#4ade80;-webkit-text-fill-color:#4ade80;">
+            <i class="fas fa-circle-check"></i> Active &amp; Secured
+          </div>
+          <div class="balance-sub" style="color:rgba(255,255,255,.5);">{{ account_number }}</div>
+        </article>
+      </div>
+
+      <!-- Content Grid: Accounts | Transactions | Quick Actions -->
+      <div class="content-grid">
+        <!-- Accounts Overview -->
+        <article class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">Accounts Overview</h2>
+            <button class="text-btn" type="button" data-open-section="accounts">Open</button>
+          </div>
+          <div class="account-list">
+            <div class="account-item active"
+                 data-account="Savings Account"
+                 data-number="{{ account_number }}"
+                 data-status="Active"
+                 data-balance="PHP {{ '%.2f'|format(savings_balance) }}"
+                 data-note="Your primary account for deposits, transfers, and available funds.">
+              <div class="account-top">
+                <div class="account-name">Savings Account</div>
+                <div class="status-chip status-active"><i class="fas fa-circle" style="font-size:0.5rem;"></i> Active</div>
+              </div>
+              <div class="account-number">{{ account_number }}</div>
+              <div class="account-meta">Available balance: PHP {{ "%.2f"|format(savings_balance) }}</div>
             </div>
-            <div class="popover-list" id="notifyList">
-              <div class="popover-item">
-                <strong>Security reminder</strong>
-                <p>Keep your phone number and password protected at all times.</p>
+            <div class="account-item"
+                 data-account="Current Account"
+                 data-number="{{ account_number }}"
+                 data-status="Active"
+                 data-balance="PHP {{ '%.2f'|format(current_balance) }}"
+                 data-note="Your current account for daily transactions.">
+              <div class="account-top">
+                <div class="account-name">Current Account</div>
+                <div class="status-chip status-active"><i class="fas fa-circle" style="font-size:0.5rem;"></i> Active</div>
               </div>
-              <div class="popover-item">
-                <strong>Profile available</strong>
-                <p>Your account profile can be reviewed from Profile Settings.</p>
-              </div>
-              <div class="popover-item">
-                <strong>Transactions synced</strong>
-                <p>Your latest banking activity is reflected in the dashboard table.</p>
-              </div>
+              <div class="account-number">{{ account_number }}</div>
+              <div class="account-meta">Available balance: PHP {{ "%.2f"|format(current_balance) }}</div>
             </div>
           </div>
-        </div>
-      </header>
+        </article>
 
-      <section class="page-section active" id="section-dashboard">
-        <div class="cards-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));">
-          <article class="balance-card">
-            <div class="card-top">
-              <div class="card-icon blue"><i class="fas fa-wallet"></i></div>
-              <button class="eye-toggle" id="toggleBalances" type="button"><i class="fas fa-eye"></i></button>
-            </div>
-            <div class="balance-label">Total Balance</div>
-            <div class="balance-amount balance-value" data-value="{{ '%.2f'|format(balance) }}">PHP {{ "%.2f"|format(balance) }}</div>
-            <div class="balance-sub">Savings + Current combined</div>
-          </article>
-
-          <article class="balance-card">
-            <div class="card-top">
-              <div class="card-icon green"><i class="fas fa-piggy-bank"></i></div>
-            </div>
-            <div class="balance-label">Savings Account</div>
-            <div class="balance-amount balance-value" id="savingsBalanceCard" data-value="{{ '%.2f'|format(savings_balance) }}">PHP {{ "%.2f"|format(savings_balance) }}</div>
-            <div class="balance-sub">Primary savings wallet</div>
-          </article>
-
-          <article class="balance-card">
-            <div class="card-top">
-              <div class="card-icon purple"><i class="fas fa-building-columns"></i></div>
-            </div>
-            <div class="balance-label">Current Account</div>
-            <div class="balance-amount balance-value" id="currentBalanceCard" data-value="{{ '%.2f'|format(current_balance) }}">PHP {{ "%.2f"|format(current_balance) }}</div>
-            <div class="balance-sub">Daily transactions wallet</div>
-          </article>
-
-          <article class="balance-card" style="background:linear-gradient(135deg,#0f172a,#1e3a5f);color:#fff;">
-            <div class="card-top">
-              <div class="card-icon" style="background:rgba(251,191,36,.15);color:#fbbf24;"><i class="fas fa-shield-halved"></i></div>
-            </div>
-            <div class="balance-label" style="color:rgba(255,255,255,.6);">Account Status</div>
-            <div class="balance-amount" style="font-size:1.1rem;color:#4ade80;"><i class="fas fa-circle-check"></i> Active & Secured</div>
-            <div class="balance-sub" style="color:rgba(255,255,255,.5);">{{ account_number }}</div>
-          </article>
-        </div>
-
-        <div class="content-grid">
-          <article class="panel">
-            <div class="panel-head">
-              <h2 class="panel-title">Accounts Overview</h2>
-              <button class="text-btn" type="button" data-open-section="accounts">Open</button>
-            </div>
-            <div class="account-list" id="accountList">
-              <div class="account-item active" data-account="Savings Account" data-number="{{ account_number }}" data-status="Active" data-balance="PHP {{ '%.2f'|format(savings_balance) }}" data-note="Your primary account for deposits, transfers, and available funds.">
-                <div class="account-top">
-                  <div class="account-name">Savings Account</div>
-                  <div class="status-chip status-active"><i class="fas fa-circle"></i> Active</div>
+        <!-- Recent Transactions -->
+        <article class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">Recent Transactions</h2>
+            <button class="panel-link" type="button" id="openTransactionsModalBtn">View All</button>
+          </div>
+          <div class="transaction-list">
+            {% if transactions %}
+              {% for t in transactions|reverse %}
+              <div class="transaction-item"
+                   data-type="{{ t.type.title() }}"
+                   data-amount="{{ '%.2f'|format(t.amount|abs) }}"
+                   data-timestamp="{{ t.timestamp }}"
+                   data-recipient="{% if t.recipient %}{{ t.recipient }}{% else %}Account activity{% endif %}"
+                   data-reference="{{ t.id }}">
+                <div class="txn-icon {% if t.amount > 0 %}green{% elif t.type.lower() == 'withdrawal' %}red{% else %}purple{% endif %}">
+                  <i class="fas {% if t.type.lower() in ['deposit','received'] %}fa-arrow-down{% elif t.type.lower() == 'withdrawal' %}fa-arrow-up{% else %}fa-paper-plane{% endif %}"></i>
                 </div>
-                <div class="account-number">{{ account_number }}</div>
-                <div class="account-meta">Available balance: PHP {{ "%.2f"|format(savings_balance) }}</div>
-              </div>
-              <div class="account-item" data-account="Current Account" data-number="{{ account_number }}" data-status="Active" data-balance="PHP {{ '%.2f'|format(current_balance) }}" data-note="Your current account for daily transactions.">
-                <div class="account-top">
-                  <div class="account-name">Current Account</div>
-                  <div class="status-chip status-active"><i class="fas fa-circle"></i> Active</div>
-                </div>
-                <div class="account-number">{{ account_number }}</div>
-                <div class="account-meta">Available balance: PHP {{ "%.2f"|format(current_balance) }}</div>
-              </div>
-            </div>
-          </article>
-
-          <article class="panel">
-            <div class="panel-head">
-              <h2 class="panel-title">Recent Transactions</h2>
-              <button class="panel-link" type="button" id="openTransactionsModalTop">View All</button>
-            </div>
-            <div class="transaction-list">
-              {% if transactions %}
-                {% for t in transactions|reverse %}
-                <div class="transaction-item" data-type="{{ t.type.title() }}" data-amount="{{ '%.2f'|format(t.amount|abs) }}" data-timestamp="{{ t.timestamp }}" data-recipient="{% if t.recipient %}{{ t.recipient }}{% else %}Account activity{% endif %}" data-reference="{{ t.id }}">
-                  <div class="txn-icon {% if t.amount > 0 %}green{% elif t.type.lower() == 'withdrawal' %}red{% else %}purple{% endif %}">
-                    <i class="fas {% if t.type.lower() in ['deposit', 'received'] %}fa-arrow-down{% elif t.type.lower() == 'withdrawal' %}fa-arrow-up{% else %}fa-paper-plane{% endif %}"></i>
-                  </div>
-                  <div class="transaction-main">
-                    <div class="transaction-top">
-                      <div class="transaction-name">{{ t.type.title() }}</div>
+                <div class="transaction-main">
+                  <div class="transaction-top">
+                    <div class="transaction-name">{{ t.type.title() }}</div>
+                    <div class="transaction-controls">
                       <div class="transaction-amount {% if t.amount > 0 %}credit{% else %}debit{% endif %}">
                         {{ '+' if t.amount > 0 else '-' }}PHP {{ '%.2f'|format(t.amount|abs) }}
                       </div>
-                    </div>
-                    <div class="transaction-meta">
-                      {% if t.recipient %}
-                        {% if t.type.lower() == 'received' %}
-                          From {{ t.recipient }}
-                        {% else %}
-                          To {{ t.recipient }}
-                        {% endif %}
-                      {% else %}
-                        Account activity update
-                      {% endif %}
-                      • {{ t.timestamp }}
+                      <span class="transaction-view-tag">View</span>
                     </div>
                   </div>
+                  <div class="transaction-meta">
+                    {% if t.recipient %}
+                      {% if t.type.lower() == 'received' %}From {{ t.recipient }}{% else %}To {{ t.recipient }}{% endif %}
+                    {% else %}Account activity update{% endif %}
+                    • {{ t.timestamp }}
+                  </div>
                 </div>
-                {% endfor %}
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="transaction-item">
+                <div class="txn-icon blue"><i class="fas fa-clock"></i></div>
+                <div class="transaction-main">
+                  <div class="transaction-top">
+                    <div class="transaction-name">No transactions yet</div>
+                    <div class="transaction-amount">PHP 0.00</div>
+                  </div>
+                  <div class="transaction-meta">Your latest transactions will appear here.</div>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        </article>
+
+        <!-- Quick Actions -->
+        <article class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">Quick Actions</h2>
+          </div>
+          <div class="quick-grid quick-actions-grid">
+            <button class="quick-action premium-btn deposit-btn" type="button" data-link="{{ url_for('deposit') }}">
+              <i class="fas fa-circle-arrow-down"></i><span>Deposit</span>
+            </button>
+            <button class="quick-action premium-btn withdraw-btn" type="button" data-link="{{ url_for('withdraw') }}">
+              <i class="fas fa-circle-arrow-up"></i><span>Withdraw</span>
+            </button>
+            <button class="quick-action premium-btn send-btn" type="button" data-link="{{ url_for('send') }}">
+              <i class="fas fa-paper-plane"></i><span>Send Money</span>
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <!-- Bottom Grid: Spending Overview (Premium & Elegant) -->
+      <div style="display:grid;grid-template-columns:1fr;gap:18px;">
+
+        <!-- Spending Overview -->
+        <article class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">Spending Overview</h2>
+            <button class="text-btn" type="button">This Month</button>
+          </div>
+          <div class="donut-wrap">
+            <div class="donut-chart"></div>
+            <div class="legend">
+              <div class="legend-item">
+                <div class="legend-left"><span class="dot" style="background:#2563eb"></span>Transfers</div>
+                <strong>38%</strong>
+              </div>
+              <div class="legend-item">
+                <div class="legend-left"><span class="dot" style="background:#16a34a"></span>Bills &amp; Utilities</div>
+                <strong>24%</strong>
+              </div>
+              <div class="legend-item">
+                <div class="legend-left"><span class="dot" style="background:#7c3aed"></span>Shopping</div>
+                <strong>22%</strong>
+              </div>
+              <div class="legend-item">
+                <div class="legend-left"><span class="dot" style="background:#ea580c"></span>Others</div>
+                <strong>16%</strong>
+              </div>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         ACCOUNTS SECTION
+    ════════════════════════════════════════ -->
+    <section class="page-section" id="section-accounts">
+      <div class="module-layout">
+        <article class="module-card">
+          <h2>Selected Account Details</h2>
+          <div class="module-list">
+            <div class="module-stat"><span>Account</span><strong id="detailAccountName">Savings Account</strong></div>
+            <div class="module-stat"><span>Number</span><strong id="detailAccountNumber">{{ account_number }}</strong></div>
+            <div class="module-stat"><span>Status</span><strong id="detailAccountStatus">Active</strong></div>
+            <div class="module-stat"><span>Balance</span><strong id="detailAccountBalance">PHP {{ "%.2f"|format(savings_balance) }}</strong></div>
+          </div>
+          <p id="detailAccountNote" style="margin-top:14px;">Your primary account for deposits, transfers, and available funds.</p>
+        </article>
+        <article class="module-card">
+          <h2>Account Tools</h2>
+          <div class="module-grid">
+            <button class="module-action" type="button" data-link="{{ url_for('deposit') }}"><i class="fas fa-arrow-down"></i><span>Deposit</span></button>
+            <button class="module-action" type="button" data-link="{{ url_for('withdraw') }}"><i class="fas fa-arrow-up"></i><span>Withdraw</span></button>
+            <button class="module-action" type="button" data-link="{{ url_for('send') }}"><i class="fas fa-paper-plane"></i><span>Transfer</span></button>
+            <button class="module-action" type="button" data-open-section="statements"><i class="fas fa-file-lines"></i><span>Statements</span></button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         FUND TRANSFER SECTION
+    ════════════════════════════════════════ -->
+    <section class="page-section" id="section-fund-transfer">
+      <div class="module-layout">
+        <article class="module-card">
+          <h2>Fund Transfer Center</h2>
+          <p>Transfer funds to another PEV account using the recipient's Philippine mobile number and generate an instant receipt.</p>
+          <div class="module-list" style="margin-top:16px;">
+            <div class="module-item"><strong>Verified Sender</strong><p>{{ full_name }} • {{ phone_number or 'Not set' }}</p></div>
+            <div class="module-item"><strong>Available Balance</strong><p>PHP {{ "%.2f"|format(balance) }}</p></div>
+            <div class="module-item"><strong>Transfer Method</strong><p>Mobile-number based receiving with proof after every successful send.</p></div>
+          </div>
+        </article>
+        <article class="module-card">
+          <h2>Transfer Actions</h2>
+          <div class="module-grid">
+            <button class="module-action" type="button" data-link="{{ url_for('send') }}"><i class="fas fa-money-bill-transfer"></i><span>Open Transfer Page</span></button>
+            <button class="module-action" type="button" data-open-modal="transactions"><i class="fas fa-receipt"></i><span>View Receipts</span></button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         PROFILE SETTINGS SECTION
+    ════════════════════════════════════════ -->
+    <section class="page-section" id="section-profile-settings">
+      <div class="module-layout">
+        <article class="module-card">
+          <h2>Profile Information</h2>
+          <div style="display:flex;align-items:center;gap:18px;margin-bottom:20px;">
+            <div id="profilePhotoDisplay" style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0;">
+              {% if photo %}
+                <img src="{{ photo }}" style="width:100%;height:100%;object-fit:cover;" id="profilePhotoImg">
               {% else %}
-                <div class="transaction-item">
-                  <div class="txn-icon blue"><i class="fas fa-clock"></i></div>
-                  <div class="transaction-main">
-                    <div class="transaction-top">
-                      <div class="transaction-name">No transactions yet</div>
-                      <div class="transaction-amount">PHP 0.00</div>
-                    </div>
-                    <div class="transaction-meta">Your latest transactions will appear here.</div>
-                  </div>
-                </div>
+                <span id="profilePhotoInitial">{{ full_name[0].upper() }}</span>
               {% endif %}
             </div>
-          </article>
-
-          <article class="panel">
-            <div class="panel-head">
-              <h2 class="panel-title">Quick Actions</h2>
+            <div>
+              <div style="font-weight:800;font-size:1.05rem;">{{ full_name }}</div>
+              <div style="color:var(--muted);font-size:0.84rem;">{{ phone_number or 'No phone set' }}</div>
+              <div style="color:var(--muted);font-size:0.84rem;">{{ email or 'No email set' }}</div>
             </div>
-            <div class="quick-grid" style="grid-template-columns:repeat(3,1fr);">
-              <button class="quick-action premium-btn deposit-btn" type="button" data-link="{{ url_for('deposit') }}"><i class="fas fa-circle-arrow-down"></i><span>Deposit</span></button>
-              <button class="quick-action premium-btn withdraw-btn" type="button" data-link="{{ url_for('withdraw') }}"><i class="fas fa-circle-arrow-up"></i><span>Withdraw</span></button>
-              <button class="quick-action premium-btn send-btn" type="button" data-link="{{ url_for('send') }}"><i class="fas fa-paper-plane"></i><span>Send Money</span></button>
-            </div>
-          </article>
-        </div>
-
-        <div class="bottom-grid">
-          <article class="panel">
-            <span class="panel-side-label">Spending Overview</span>
-            <div class="panel-head">
-              <h2 class="panel-title">Spending Overview</h2>
-            </div>
-            <div class="donut-wrap">
-              <div class="donut-chart"></div>
-              <div class="legend">
-                <div class="legend-item"><div class="legend-left"><span class="dot" style="background:#2563eb"></span>Transfers</div><strong>38%</strong></div>
-                <div class="legend-item"><div class="legend-left"><span class="dot" style="background:#16a34a"></span>Bills & Utilities</div><strong>24%</strong></div>
-                <div class="legend-item"><div class="legend-left"><span class="dot" style="background:#7c3aed"></span>Shopping</div><strong>22%</strong></div>
-                <div class="legend-item"><div class="legend-left"><span class="dot" style="background:#ea580c"></span>Others</div><strong>16%</strong></div>
-              </div>
-            </div>
-          </article>
-
-          <article class="receipt-panel">
-            <span class="panel-side-label">Transaction Receipt</span>
-            <div class="receipt-header">
-              <i class="fas fa-receipt"></i>
-              <h2>Transaction Receipt</h2>
-            </div>
-
-            <div class="receipt-divider"></div>
-
-            <div class="receipt-content">
-              <div class="receipt-section">
-                <span class="receipt-label">Transaction Type</span>
-                <span class="receipt-value" id="receiptType">Deposit</span>
-              </div>
-
-              <div class="receipt-section">
-                <span class="receipt-label">Amount</span>
-                <div class="receipt-amount" id="receiptAmount">PHP 0.00</div>
-              </div>
-
-              <div class="receipt-divider-subtle"></div>
-
-              <div class="receipt-row">
-                <div class="receipt-section">
-                  <span class="receipt-label">Date & Time</span>
-                  <span class="receipt-value" id="receiptTime">N/A</span>
-                </div>
-              </div>
-
-              <div class="receipt-row">
-                <div class="receipt-section">
-                  <span class="receipt-label">Account</span>
-                  <span class="receipt-value">{{ account_number[:4] }}...{{ account_number[-4:] }}</span>
-                </div>
-                <div class="receipt-section">
-                  <span class="receipt-label">Reference ID</span>
-                  <span class="receipt-value receipt-ref-id" id="receiptRefId">RCP-000000</span>
-                </div>
-              </div>
-
-              <div class="receipt-section">
-                <span class="receipt-label">Recipient / Sender</span>
-                <span class="receipt-value" id="receiptRecipient">N/A</span>
-              </div>
-
-              <div class="receipt-divider-subtle"></div>
-
-              <div class="receipt-status">
-                <i class="fas fa-circle-check"></i>
-                <span>Completed Successfully</span>
-              </div>
-            </div>
-
-            <button class="receipt-download-btn" type="button" id="downloadReceiptBtn">
-              <i class="fas fa-download"></i> Download Receipt
-            </button>
-          </article>
-        </div>
-
-
-      </section>
-
-      <section class="page-section" id="section-accounts">
-        <div class="module-layout">
-          <article class="module-card">
-            <h2>Selected Account Details</h2>
-            <div class="module-list">
-              <div class="module-stat"><span>Account</span><strong id="detailAccountName">Savings Account</strong></div>
-              <div class="module-stat"><span>Number</span><strong id="detailAccountNumber">{{ account_number }}</strong></div>
-              <div class="module-stat"><span>Status</span><strong id="detailAccountStatus">Active</strong></div>
-              <div class="module-stat"><span>Balance</span><strong id="detailAccountBalance">PHP {{ "%.2f"|format(savings_balance) }}</strong></div>
-            </div>
-            <p id="detailAccountNote" style="margin-top:14px;">Your primary account for deposits, transfers, and available funds.</p>
-          </article>
-
-          <article class="module-card">
-            <h2>Account Tools</h2>
-            <div class="module-grid">
-              <button class="module-action" type="button" data-link="{{ url_for('deposit') }}"><i class="fas fa-arrow-down"></i><span>Deposit</span></button>
-              <button class="module-action" type="button" data-link="{{ url_for('withdraw') }}"><i class="fas fa-arrow-up"></i><span>Withdraw</span></button>
-              <button class="module-action" type="button" data-link="{{ url_for('send') }}"><i class="fas fa-paper-plane"></i><span>Transfer</span></button>
-              <button class="module-action" type="button" data-open-section="statements"><i class="fas fa-file-lines"></i><span>Statements</span></button>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="page-section" id="section-fund-transfer">
-        <div class="module-layout">
-          <article class="module-card">
-            <h2>Fund Transfer Center</h2>
-            <p>Transfer funds to another PEV account using the recipient's Philippine mobile number and generate an instant receipt.</p>
-            <div class="module-list" style="margin-top:16px;">
-              <div class="module-item"><strong>Verified Sender</strong><p>{{ full_name }} • {{ phone_number or 'Not set' }}</p></div>
-              <div class="module-item"><strong>Available Balance</strong><p>PHP {{ "%.2f"|format(balance) }}</p></div>
-              <div class="module-item"><strong>Transfer Method</strong><p>Mobile-number based receiving with proof after every successful send.</p></div>
-            </div>
-          </article>
-          <article class="module-card">
-            <h2>Transfer Actions</h2>
-            <div class="module-grid">
-              <button class="module-action" type="button" data-link="{{ url_for('send') }}"><i class="fas fa-money-bill-transfer"></i><span>Open Transfer Page</span></button>
-              <button class="module-action" type="button" data-open-modal="transactions"><i class="fas fa-receipt"></i><span>View Receipts</span></button>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="page-section" id="section-bill-payments">
-        <div class="module-card">
-          <h2>Bill Payments</h2>
-          <p>Bill payment routing is available as a dashboard section now. You can keep common billers here and route future payment logic through this page.</p>
-          <div class="module-list" style="margin-top:16px;">
-            <div class="module-item"><strong>Electricity</strong><p>Set up payment templates and due-date reminders.</p></div>
-            <div class="module-item"><strong>Water</strong><p>Store bill references for faster future payments.</p></div>
-            <div class="module-item"><strong>Internet</strong><p>Central place for recurring digital service bills.</p></div>
           </div>
-        </div>
-      </section>
-
-      <section class="page-section" id="section-loan-details">
-        <div class="module-card">
-          <h2>Loan Details</h2>
-          <p>This module is available as a functional view with status messaging for the current project.</p>
-          <div class="module-list" style="margin-top:16px;">
-            <div class="module-item"><strong>Total Loans</strong><p>PHP 0.00</p></div>
-            <div class="module-item"><strong>Outstanding</strong><p>PHP 0.00</p></div>
-            <div class="module-item"><strong>Repayment Status</strong><p>No active loan schedule recorded.</p></div>
+          <div class="module-list">
+            <div class="module-stat"><span>Full Name</span><strong id="dispFullName">{{ full_name }}</strong></div>
+            <div class="module-stat"><span>Account Number</span><strong>{{ account_number }}</strong></div>
+            <div class="module-stat"><span>Mobile Number</span><strong id="dispPhone">{{ phone_number or 'Not set' }}</strong></div>
+            <div class="module-stat"><span>Email</span><strong id="dispEmail">{{ email or 'Not set' }}</strong></div>
           </div>
-        </div>
-      </section>
-
-      <section class="page-section" id="section-cards">
-        <div class="module-card">
-          <h2>Cards</h2>
-          <p>Card controls are available here as an interactive placeholder section.</p>
-          <div class="module-grid" style="margin-top:16px;">
-            <button class="module-action" type="button" data-action-message="Card locking will be available once card issuance is added."><i class="fas fa-lock"></i><span>Lock Card</span></button>
-            <button class="module-action" type="button" data-action-message="Spending limits can be managed here in a future update."><i class="fas fa-sliders"></i><span>Set Limits</span></button>
+        </article>
+        <article class="module-card">
+          <h2>Settings Actions</h2>
+          <div class="module-grid">
+            <button class="module-action" type="button" id="openEditProfile"><i class="fas fa-user-pen"></i><span>Edit Profile</span></button>
+            <button class="module-action" type="button" id="openChangePassword"><i class="fas fa-key"></i><span>Change Password</span></button>
           </div>
-        </div>
-      </section>
-
-      <section class="page-section" id="section-statements">
-        <div class="module-card">
-          <h2>Statements</h2>
-          <p>Your recent transaction history is available below and can also be opened in the modal viewer.</p>
-          <div class="module-grid" style="margin-top:16px;">
-            <button class="module-action" type="button" data-open-modal="transactions"><i class="fas fa-table-list"></i><span>Open Transactions Modal</span></button>
-            <button class="module-action" type="button" data-action-message="Statement export can be connected here later."><i class="fas fa-download"></i><span>Export Statement</span></button>
-          </div>
-        </div>
-      </section>
-
-      <section class="page-section" id="section-profile-settings">
-        <div class="module-layout">
-          <article class="module-card">
-            <h2>Profile Information</h2>
-            <!-- Photo display -->
-            <div style="display:flex;align-items:center;gap:18px;margin-bottom:20px;">
-              <div id="profilePhotoDisplay" style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0;">
-                {% if photo %}
-                  <img src="{{ photo }}" style="width:100%;height:100%;object-fit:cover;" id="profilePhotoImg">
-                {% else %}
-                  <span id="profilePhotoInitial">{{ full_name[0].upper() }}</span>
-                {% endif %}
-              </div>
-              <div>
-                <div style="font-weight:800;font-size:1.05rem;">{{ full_name }}</div>
-                <div style="color:var(--muted);font-size:0.84rem;">{{ phone_number or 'No phone set' }}</div>
-                <div style="color:var(--muted);font-size:0.84rem;">{{ email or 'No email set' }}</div>
-              </div>
-            </div>
-            <div class="module-list">
-              <div class="module-stat"><span>Full Name</span><strong id="dispFullName">{{ full_name }}</strong></div>
-              <div class="module-stat"><span>Account Number</span><strong>{{ account_number }}</strong></div>
-              <div class="module-stat"><span>Mobile Number</span><strong id="dispPhone">{{ phone_number or 'Not set' }}</strong></div>
-              <div class="module-stat"><span>Email</span><strong id="dispEmail">{{ email or 'Not set' }}</strong></div>
-            </div>
-          </article>
-          <article class="module-card">
-            <h2>Settings Actions</h2>
-            <div class="module-grid">
-              <button class="module-action" type="button" id="openEditProfile"><i class="fas fa-user-pen"></i><span>Edit Profile</span></button>
-              <button class="module-action" type="button" id="openChangePassword"><i class="fas fa-key"></i><span>Change Password</span></button>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="page-section" id="section-support">
-        <div class="module-card">
-          <h2>Support Center</h2>
-          <p>This section is now functional as a help destination inside the dashboard.</p>
-          <div class="module-list" style="margin-top:16px;">
-            <div class="module-item"><strong>Live Help</strong><p>Use this area to route chat or issue forms later.</p></div>
-            <div class="module-item"><strong>Security Concern</strong><p>Immediately change your password and contact support if you notice anything unusual.</p></div>
-            <div class="module-item"><strong>General Assistance</strong><p>Account, transfer, and profile concerns can all start here.</p></div>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <!-- Edit Profile Modal -->
-  <div class="modal-backdrop" id="editProfileModal">
-    <div class="modal" style="max-width:520px;">
-      <div class="modal-head">
-        <h3><i class="fas fa-user-pen" style="color:var(--primary);margin-right:8px;"></i>Edit Profile</h3>
-        <button class="modal-close" id="closeEditProfile" type="button"><i class="fas fa-xmark"></i></button>
+        </article>
       </div>
-      <div class="modal-body">
-        <!-- Photo upload -->
-        <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:24px;">
-          <div id="editPhotoPreview" style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;color:#fff;overflow:hidden;border:3px solid #dbeafe;">
-            <span id="editPhotoInitial">?</span>
-          </div>
-          <label style="cursor:pointer;background:var(--primary-soft);color:var(--primary);padding:8px 18px;border-radius:10px;font-size:0.84rem;font-weight:700;">
-            <i class="fas fa-camera"></i> Upload Photo
-            <input type="file" id="photoInput" accept="image/*" style="display:none;">
-          </label>
-          <p style="font-size:0.75rem;color:var(--muted);">JPG, PNG or GIF · Max 2MB</p>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         SUPPORT SECTION
+    ════════════════════════════════════════ -->
+    <section class="page-section" id="section-support">
+      <div class="module-card">
+        <h2>Support Center</h2>
+        <p>This section is now functional as a help destination inside the dashboard.</p>
+        <div class="module-list" style="margin-top:16px;">
+          <div class="module-item"><strong>Live Help</strong><p>Use this area to route chat or issue forms later.</p></div>
+          <div class="module-item"><strong>Security Concern</strong><p>Immediately change your password and contact support if you notice anything unusual.</p></div>
+          <div class="module-item"><strong>General Assistance</strong><p>Account, transfer, and profile concerns can all start here.</p></div>
         </div>
-        <!-- Fields -->
-        <div style="display:flex;flex-direction:column;gap:14px;">
-          <div>
-            <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">FULL NAME</label>
-            <input type="text" id="editFullName" placeholder="Your full name"
-              style="width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;font-size:0.95rem;outline:none;transition:.2s;">
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ════════════════════════════════════════
+     MODALS
+════════════════════════════════════════ -->
+
+<!-- Receipt Modal - Real-time -->
+<div class="modal-backdrop receipt-modal" id="receiptModal">
+  <div class="modal">
+    <div class="receipt-header">
+      <h3><i class="fas fa-receipt" style="font-size:1.2rem;"></i></h3>
+      <p>View and manage your transaction receipts instantly</p>
+    </div>
+    <div class="receipt-filter">
+      <button class="filter-btn active" data-filter="all">All Transactions</button>
+      <button class="filter-btn" data-filter="deposit">Deposits</button>
+      <button class="filter-btn" data-filter="withdrawal">Withdrawals</button>
+      <button class="filter-btn" data-filter="transfer">Transfers</button>
+    </div>
+    <div class="modal-body" style="padding:0;">
+      <div id="receiptListContainer">
+        {% if transactions %}
+          {% for t in transactions|reverse %}
+          <div class="receipt-item" data-type="{% if t.type.lower() in ['deposit','received'] %}deposit{% elif t.type.lower() == 'withdrawal' %}withdrawal{% else %}transfer{% endif %}">
+            <div class="receipt-item-left">
+              <div class="receipt-item-icon {% if t.amount > 0 %}green{% elif t.type.lower() == 'withdrawal' %}red{% else %}purple{% endif %}">
+                <i class="fas {% if t.type.lower() in ['deposit','received'] %}fa-arrow-down{% elif t.type.lower() == 'withdrawal' %}fa-arrow-up{% else %}fa-paper-plane{% endif %}"></i>
+              </div>
+              <div class="receipt-item-details">
+                <div class="receipt-item-type">{{ t.type.title() }}</div>
+                <div class="receipt-item-meta">
+                  {% if t.recipient %}
+                    {% if t.type.lower() == 'received' %}From {{ t.recipient }}{% else %}To {{ t.recipient }}{% endif %}
+                  {% else %}Account activity update{% endif %}
+                  <br><small>{{ t.timestamp }}</small>
+                </div>
+              </div>
+            </div>
+            <div class="receipt-item-amount {% if t.amount > 0 %}credit{% else %}debit{% endif %}">
+              {{ '+' if t.amount > 0 else '-' }}PHP {{ '%.2f'|format(t.amount|abs) }}
+            </div>
           </div>
-          <div>
-            <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">EMAIL ADDRESS</label>
-            <input type="email" id="editEmail" placeholder="you@example.com"
-              style="width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;font-size:0.95rem;outline:none;transition:.2s;">
+          {% endfor %}
+        {% else %}
+          <div class="receipt-empty">
+            <i class="fas fa-inbox"></i>
+            <p>No receipts yet</p>
+            <small>Your transaction receipts will appear here</small>
           </div>
-          <div>
-            <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">MOBILE NUMBER</label>
-            <input type="text" id="editPhone" placeholder="09XX XXX XXXX"
-              style="width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;font-size:0.95rem;outline:none;transition:.2s;">
+        {% endif %}
+      </div>
+    </div>
+    <div class="receipt-footer">
+      <span>Total Transactions: <strong id="receiptCount">{{ transactions|length if transactions else 0 }}</strong></span>
+      <span><span class="receipt-badge"><i class="fas fa-circle" style="font-size:0.6rem;"></i> Live</span></span>
+      <button class="modal-close" id="closeReceiptModalBtn" type="button" style="border:none;background:none;color:#2563eb;cursor:pointer;font-size:1rem;"><i class="fas fa-xmark"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- Receipt Detail Modal -->
+<div class="modal-backdrop" id="receiptDetailModal">
+  <div class="modal" style="max-width:520px;">
+    <div class="receipt-detail-header">
+      <div class="receipt-detail-icon" id="receiptDetailIcon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <h3 id="receiptDetailTitle">Transaction Complete</h3>
+      <p id="receiptDetailStatus"></p>
+      <div class="receipt-detail-amount" id="receiptDetailAmount">PHP 0.00</div>
+    </div>
+    <div class="receipt-detail-body">
+      <div class="receipt-detail-row">
+        <span class="receipt-detail-label">Transaction Type</span>
+        <span class="receipt-detail-value" id="receiptDetailType">-</span>
+      </div>
+      <div class="receipt-detail-row">
+        <span class="receipt-detail-label">Amount</span>
+        <span class="receipt-detail-value" id="receiptDetailAmountRow">PHP 0.00</span>
+      </div>
+      <div class="receipt-detail-row">
+        <span class="receipt-detail-label">From/To</span>
+        <span class="receipt-detail-value" id="receiptDetailRecipient">-</span>
+      </div>
+      <div class="receipt-detail-row">
+        <span class="receipt-detail-label">Date & Time</span>
+        <span class="receipt-detail-value" id="receiptDetailTimestamp">-</span>
+      </div>
+      <div class="receipt-detail-row">
+        <span class="receipt-detail-label">Reference ID</span>
+        <span class="receipt-detail-value highlight" id="receiptDetailRef">-</span>
+      </div>
+      <div class="receipt-detail-row">
+        <span class="receipt-detail-label">Status</span>
+        <span class="receipt-status success" id="receiptDetailStatusBadge"><i class="fas fa-circle-check"></i> Completed</span>
+      </div>
+    </div>
+    <div class="receipt-detail-footer">
+      <button class="receipt-btn receipt-btn-secondary" id="closeReceiptDetailBtn" type="button">
+        <i class="fas fa-arrow-left"></i> Back
+      </button>
+      <button class="receipt-btn receipt-btn-primary" id="downloadReceiptBtn" type="button">
+        <i class="fas fa-download"></i> Download
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Transactions Modal -->
+<div class="modal-backdrop" id="transactionsModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Transaction Viewer</h3>
+      <button class="modal-close" id="closeTransactionsModalBtn" type="button"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="receipt-list">
+        {% if transactions %}
+          {% for t in transactions|reverse %}
+          <div class="module-item">
+            <strong>{{ t.type.title() }} • {{ '+' if t.amount > 0 else '-' }}PHP {{ '%.2f'|format(t.amount|abs) }}</strong>
+            <p>
+              {% if t.recipient %}
+                {% if t.type.lower() == 'received' %}From {{ t.recipient }}{% else %}To {{ t.recipient }}{% endif %}
+              {% else %}Account activity update{% endif %}
+              • {{ t.timestamp }}
+            </p>
           </div>
-        </div>
-        <button id="saveProfileBtn" type="button"
-          style="margin-top:22px;width:100%;padding:14px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:14px;font-size:1rem;font-weight:800;cursor:pointer;transition:.2s;">
-          <i class="fas fa-check"></i> Save Changes
-        </button>
-        <p id="editProfileError" style="color:var(--red);font-size:0.82rem;margin-top:10px;display:none;"></p>
+          {% endfor %}
+        {% else %}
+          <div class="module-item">
+            <strong>No transactions yet</strong>
+            <p>Your transaction receipts will appear here after deposits, withdrawals, or transfers.</p>
+          </div>
+        {% endif %}
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Change Password Modal -->
-  <div class="modal-backdrop" id="changePasswordModal">
-    <div class="modal" style="max-width:460px;">
-      <div class="modal-head">
-        <h3><i class="fas fa-key" style="color:var(--primary);margin-right:8px;"></i>Change Password</h3>
-        <button class="modal-close" id="closeChangePassword" type="button"><i class="fas fa-xmark"></i></button>
-      </div>
-      <div class="modal-body">
-        <div style="display:flex;flex-direction:column;gap:14px;">
-          <div>
-            <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">CURRENT PASSWORD</label>
-            <input type="password" id="currentPassword" placeholder="Enter current password"
-              style="width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;font-size:0.95rem;outline:none;">
-          </div>
-          <div>
-            <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">NEW PASSWORD</label>
-            <input type="password" id="newPassword" placeholder="Min. 6 characters"
-              style="width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;font-size:0.95rem;outline:none;">
-          </div>
-          <div>
-            <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">CONFIRM NEW PASSWORD</label>
-            <input type="password" id="confirmPassword" placeholder="Repeat new password"
-              style="width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;font-size:0.95rem;outline:none;">
-          </div>
+<!-- Edit Profile Modal -->
+<div class="modal-backdrop" id="editProfileModal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-head">
+      <h3><i class="fas fa-user-pen" style="color:var(--primary);margin-right:8px;"></i>Edit Profile</h3>
+      <button class="modal-close" id="closeEditProfile" type="button"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:24px;">
+        <div id="editPhotoPreview" style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;color:#fff;overflow:hidden;border:3px solid #dbeafe;">
+          <span id="editPhotoInitial">?</span>
         </div>
-        <!-- Strength bar -->
-        <div style="margin-top:12px;">
-          <div style="height:5px;border-radius:99px;background:#eef2f7;overflow:hidden;">
-            <div id="pwStrengthBar" style="height:100%;width:0%;border-radius:99px;transition:.3s;"></div>
-          </div>
-          <p id="pwStrengthLabel" style="font-size:0.75rem;color:var(--muted);margin-top:5px;"></p>
-        </div>
-        <button id="savePasswordBtn" type="button"
-          style="margin-top:22px;width:100%;padding:14px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:14px;font-size:1rem;font-weight:800;cursor:pointer;transition:.2s;">
-          <i class="fas fa-lock"></i> Update Password
-        </button>
-        <p id="changePasswordError" style="color:var(--red);font-size:0.82rem;margin-top:10px;display:none;"></p>
+        <label style="cursor:pointer;background:var(--primary-soft);color:var(--primary);padding:8px 18px;border-radius:10px;font-size:0.84rem;font-weight:700;">
+          <i class="fas fa-camera"></i> Upload Photo
+          <input type="file" id="photoInput" accept="image/*" style="display:none;">
+        </label>
+        <p style="font-size:0.75rem;color:var(--muted);">JPG, PNG or GIF · Max 2MB</p>
       </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">FULL NAME</label>
+          <input type="text" id="editFullName" placeholder="Your full name"
+            style="width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;font-size:0.95rem;outline:none;transition:.2s;">
+        </div>
+        <div>
+          <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">EMAIL ADDRESS</label>
+          <input type="email" id="editEmail" placeholder="you@example.com"
+            style="width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;font-size:0.95rem;outline:none;transition:.2s;">
+        </div>
+        <div>
+          <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">MOBILE NUMBER</label>
+          <input type="text" id="editPhone" placeholder="09XX XXX XXXX"
+            style="width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;font-size:0.95rem;outline:none;transition:.2s;">
+        </div>
+      </div>
+      <button id="saveProfileBtn" type="button"
+        style="margin-top:22px;width:100%;padding:14px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:14px;font-size:1rem;font-weight:800;cursor:pointer;transition:.2s;">
+        <i class="fas fa-check"></i> Save Changes
+      </button>
+      <p id="editProfileError" style="color:var(--red);font-size:0.82rem;margin-top:10px;display:none;"></p>
     </div>
   </div>
+</div>
 
-  <div class="modal-backdrop" id="transactionsModal">
-    <div class="modal">
-      <div class="modal-head">
-        <h3>Transaction Viewer</h3>
-        <button class="modal-close" id="closeTransactionsModal" type="button"><i class="fas fa-xmark"></i></button>
-      </div>
-      <div class="modal-body">
-        <div class="receipt-list">
-          {% if transactions %}
-            {% for t in transactions|reverse %}
-            <div class="module-item">
-              <strong>{{ t.type.title() }} • {{ '+' if t.amount > 0 else '-' }}PHP {{ '%.2f'|format(t.amount|abs) }}</strong>
-              <p>
-                {% if t.recipient %}
-                  {% if t.type.lower() == 'received' %}
-                    From {{ t.recipient }}
-                  {% else %}
-                    To {{ t.recipient }}
-                  {% endif %}
-                {% else %}
-                  Account activity update
-                {% endif %}
-                • {{ t.timestamp }}
-              </p>
-            </div>
-            {% endfor %}
-          {% else %}
-            <div class="module-item">
-              <strong>No transactions yet</strong>
-              <p>Your transaction receipts will appear here after deposits, withdrawals, or transfers.</p>
-            </div>
-          {% endif %}
+<!-- Change Password Modal -->
+<div class="modal-backdrop" id="changePasswordModal">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-head">
+      <h3><i class="fas fa-key" style="color:var(--primary);margin-right:8px;"></i>Change Password</h3>
+      <button class="modal-close" id="closeChangePassword" type="button"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">CURRENT PASSWORD</label>
+          <input type="password" id="currentPassword" placeholder="Enter current password"
+            style="width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;font-size:0.95rem;outline:none;">
+        </div>
+        <div>
+          <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">NEW PASSWORD</label>
+          <input type="password" id="newPassword" placeholder="Min. 6 characters"
+            style="width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;font-size:0.95rem;outline:none;">
+        </div>
+        <div>
+          <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">CONFIRM NEW PASSWORD</label>
+          <input type="password" id="confirmPassword" placeholder="Repeat new password"
+            style="width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;font-size:0.95rem;outline:none;">
         </div>
       </div>
+      <div style="margin-top:12px;">
+        <div style="height:5px;border-radius:99px;background:#eef2f7;overflow:hidden;">
+          <div id="pwStrengthBar" style="height:100%;width:0%;border-radius:99px;transition:.3s;"></div>
+        </div>
+        <p id="pwStrengthLabel" style="font-size:0.75rem;color:var(--muted);margin-top:5px;"></p>
+      </div>
+      <button id="savePasswordBtn" type="button"
+        style="margin-top:22px;width:100%;padding:14px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:14px;font-size:1rem;font-weight:800;cursor:pointer;transition:.2s;">
+        <i class="fas fa-lock"></i> Update Password
+      </button>
+      <p id="changePasswordError" style="color:var(--red);font-size:0.82rem;margin-top:10px;display:none;"></p>
     </div>
   </div>
+</div>
 
-  <div class="toast" id="toast"></div>
+<!-- ════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════ -->
+<script>
+  // ── Refs ──────────────────────────────────────────────
+  const navButtons            = document.querySelectorAll('.nav-btn');
+  const sections              = document.querySelectorAll('.page-section');
+  const pageHeading           = document.getElementById('pageHeading');
+  const pageSubtitle          = document.getElementById('pageSubtitle');
+  const balanceValues         = document.querySelectorAll('.balance-value');
+  const toggleBalancesBtn     = document.getElementById('toggleBalances');
+  const sidebar               = document.getElementById('sidebar');
+  const notifyBtn             = document.getElementById('notifyBtn');
+  const notifyPopover         = document.getElementById('notifyPopover');
+  const toastEl               = document.getElementById('toast');
+  const transactionsModal     = document.getElementById('transactionsModal');
+  const closeTransModalBtn    = document.getElementById('closeTransactionsModalBtn');
+  const openTransModalBtn     = document.getElementById('openTransactionsModalBtn');
+  const securityBtn           = document.getElementById('securityBtn');
+  const securityMessage       = document.getElementById('securityMessage');
+  const markAlertsReadBtn     = document.getElementById('markAlertsRead');
+  const notifyList            = document.getElementById('notifyList');
+  const newPasswordInput      = document.getElementById('newPassword');
+  const savePasswordBtn       = document.getElementById('savePasswordBtn');
+  const editProfileModal      = document.getElementById('editProfileModal');
+  const changePasswordModal   = document.getElementById('changePasswordModal');
+  const receiptModal          = document.getElementById('receiptModal');
+  const openReceiptModalBtn   = document.getElementById('openReceiptModalBtn');
+  const closeReceiptModalBtn  = document.getElementById('closeReceiptModalBtn');
+  const receiptDetailModal    = document.getElementById('receiptDetailModal');
+  const closeReceiptDetailBtn = document.getElementById('closeReceiptDetailBtn');
+  const downloadReceiptBtn    = document.getElementById('downloadReceiptBtn');
 
-  <script>
-    const navButtons = document.querySelectorAll('.nav-btn');
-    const sections = document.querySelectorAll('.page-section');
-    const pageHeading = document.getElementById('pageHeading');
-    const pageSubtitle = document.getElementById('pageSubtitle');
-    const balanceValues = document.querySelectorAll('.balance-value');
-    const toggleBalancesBtn = document.getElementById('toggleBalances');
-    const sidebar = document.getElementById('sidebar');
-    const notifyBtn = document.getElementById('notifyBtn');
-    const notifyPopover = document.getElementById('notifyPopover');
-    const toast = document.getElementById('toast');
-    const transactionsModal = document.getElementById('transactionsModal');
-    const securityBtn = document.getElementById('securityBtn');
-    const securityMessage = document.getElementById('securityMessage');
-    let balancesVisible = true;
+  let balancesVisible = true;
+  let pendingPhoto    = '';
 
-    function showToast(message) {
-      toast.textContent = message;
-      toast.classList.add('show');
-      clearTimeout(showToast.timer);
-      showToast.timer = setTimeout(() => toast.classList.remove('show'), 2400);
-    }
+  // ── Toast ─────────────────────────────────────────────
+  function showToast(message, type = 'default') {
+    toastEl.textContent = message;
+    toastEl.className = 'toast ' + type;
+    toastEl.classList.add('show');
+    clearTimeout(showToast._timer);
+    showToast._timer = setTimeout(() => toastEl.classList.remove('show'), 3000);
+  }
 
-    function openSection(sectionName, title, subtitle) {
-      sections.forEach((section) => {
-        section.classList.toggle('active', section.id === `section-${sectionName}`);
-      });
-      navButtons.forEach((button) => {
-        button.classList.toggle('active', button.dataset.section === sectionName);
-      });
-      if (title) pageHeading.textContent = title;
-      if (subtitle) pageSubtitle.textContent = subtitle;
-      if (window.innerWidth <= 920) sidebar.classList.remove('open');
-    }
+  // ── Receipt Detail View ───────────────────────────────
+  function openReceiptDetail(receiptItem) {
+    const type = receiptItem.dataset.type;
+    const amount = receiptItem.querySelector('.receipt-item-amount').textContent.trim();
+    const typeEl = receiptItem.querySelector('.receipt-item-type');
+    const metaEl = receiptItem.querySelector('.receipt-item-meta');
+    const transactionType = typeEl ? typeEl.textContent : 'Unknown';
+    
+    // Parse details from receipt item
+    const metaText = metaEl ? metaEl.textContent : '';
+    const lines = metaText.split('\n').map(l => l.trim()).filter(l => l);
+    const recipient = lines[0] || 'Account Activity';
+    const timestamp = lines[1] || 'N/A';
+    const refId = receiptItem.dataset.reference || 'TXN' + Date.now();
 
-    navButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        openSection(button.dataset.section, button.dataset.title, button.dataset.subtitle);
+    // Update detail modal
+    document.getElementById('receiptDetailTitle').textContent = transactionType;
+    document.getElementById('receiptDetailAmount').textContent = amount;
+    document.getElementById('receiptDetailType').textContent = transactionType;
+    document.getElementById('receiptDetailAmountRow').textContent = amount;
+    document.getElementById('receiptDetailRecipient').textContent = recipient;
+    document.getElementById('receiptDetailTimestamp').textContent = timestamp;
+    document.getElementById('receiptDetailRef').textContent = refId;
+
+    // Update icon based on type
+    const iconEl = document.getElementById('receiptDetailIcon');
+    let iconClass = 'fas fa-check-circle';
+    if (type === 'deposit') iconClass = 'fas fa-arrow-down';
+    else if (type === 'withdrawal') iconClass = 'fas fa-arrow-up';
+    else if (type === 'transfer') iconClass = 'fas fa-paper-plane';
+    iconEl.innerHTML = '<i class="' + iconClass + '"></i>';
+
+    // Update status based on amount color
+    const statusEl = document.querySelector('.receipt-item-amount', receiptItem);
+    let statusClass = 'success';
+    if (type === 'withdrawal') statusClass = 'success';
+    let statusBadge = document.getElementById('receiptDetailStatusBadge');
+    statusBadge.className = 'receipt-status ' + statusClass;
+    statusBadge.innerHTML = '<i class="fas fa-circle-check"></i> Completed';
+
+    // Store ref for download
+    downloadReceiptBtn.dataset.ref = refId;
+    downloadReceiptBtn.dataset.type = transactionType;
+    downloadReceiptBtn.dataset.amount = amount;
+
+    receiptDetailModal.classList.add('open');
+  }
+
+  function closeReceiptDetail() {
+    receiptDetailModal.classList.remove('open');
+  }
+
+  // Receipt detail close button
+  if (closeReceiptDetailBtn) {
+    closeReceiptDetailBtn.addEventListener('click', closeReceiptDetail);
+  }
+
+  receiptDetailModal.addEventListener('click', e => {
+    if (e.target === receiptDetailModal) closeReceiptDetail();
+  });
+
+  // Download receipt
+  if (downloadReceiptBtn) {
+    downloadReceiptBtn.addEventListener('click', () => {
+      const refId = downloadReceiptBtn.dataset.ref;
+      const txnType = downloadReceiptBtn.dataset.type;
+      const amount = downloadReceiptBtn.dataset.amount;
+      
+      // Generate receipt content
+      const receiptContent = `
+========================================
+          PEV BANKING RECEIPT
+========================================
+
+Transaction Type: ${txnType}
+Amount: ${amount}
+Reference ID: ${refId}
+Date: ${new Date().toLocaleString()}
+Status: COMPLETED
+
+========================================
+     Thank you for banking with us!
+========================================
+      `;
+
+      // Create blob and download
+      const blob = new Blob([receiptContent], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'Receipt_' + refId + '.txt';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      showToast('Receipt downloaded successfully!', 'success');
+    });
+  }
+
+  // Make receipt items clickable
+  function setupReceiptItemClickHandlers() {
+    document.querySelectorAll('.receipt-item').forEach(item => {
+      item.addEventListener('click', function() {
+        openReceiptDetail(this);
       });
     });
+  }
 
-    document.querySelectorAll('[data-open-section]').forEach((button) => {
-      button.addEventListener('click', () => {
-        const target = button.dataset.openSection;
-        const nav = document.querySelector(`.nav-btn[data-section="${target}"]`);
-        if (nav) nav.click();
-      });
-    });
+  // Setup on page load and after modal opens
+  setupReceiptItemClickHandlers();
 
-    toggleBalancesBtn.addEventListener('click', () => {
-      balancesVisible = !balancesVisible;
-      toggleBalancesBtn.innerHTML = balancesVisible ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
-      balanceValues.forEach((item) => {
-        if (balancesVisible) {
-          item.textContent = `PHP ${item.dataset.value}`;
-          item.classList.remove('hidden-balance');
+  // ── Receipt Modal - Real-time ─────────────────────────
+  function openReceiptModal() {
+    receiptModal.classList.add('open');
+    // Ensure click handlers are set up after modal opens
+    setTimeout(setupReceiptItemClickHandlers, 100);
+  }
+
+  function closeReceiptModal() {
+    receiptModal.classList.remove('open');
+  }
+
+  if (openReceiptModalBtn) {
+    openReceiptModalBtn.addEventListener('click', openReceiptModal);
+  }
+
+  if (closeReceiptModalBtn) {
+    closeReceiptModalBtn.addEventListener('click', closeReceiptModal);
+  }
+
+  receiptModal.addEventListener('click', e => {
+    if (e.target === receiptModal) closeReceiptModal();
+  });
+  document.querySelectorAll('.receipt-modal .filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.receipt-modal .filter-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      
+      const filterType = this.dataset.filter;
+      const items = document.querySelectorAll('.receipt-item');
+      let visibleCount = 0;
+
+      items.forEach(item => {
+        if (filterType === 'all' || item.dataset.type === filterType) {
+          item.style.display = 'flex';
+          visibleCount++;
         } else {
-          item.textContent = 'PHP ******';
-          item.classList.add('hidden-balance');
+          item.style.display = 'none';
         }
       });
-    });
 
-    document.querySelectorAll('.quick-action, .module-action, .table-row-btn').forEach((item) => {
-      item.addEventListener('click', () => {
-        item.classList.add('clicked');
-        setTimeout(() => item.classList.remove('clicked'), 180);
-
-        if (item.dataset.actionMessage) {
-          showToast(item.dataset.actionMessage);
+      if (visibleCount === 0) {
+        const emptyExists = document.querySelector('.receipt-empty');
+        if (!emptyExists) {
+          const container = document.getElementById('receiptListContainer');
+          container.innerHTML = '<div class="receipt-empty"><i class="fas fa-inbox"></i><p>No ' + filterType + ' receipts</p><small>Transactions will appear here</small></div>';
         }
-
-        if (item.dataset.link) {
-          setTimeout(() => {
-            window.location.href = item.dataset.link;
-          }, 120);
-        }
-      });
-    });
-
-    notifyBtn.addEventListener('click', (event) => {
-      event.stopPropagation();
-      notifyPopover.classList.toggle('open');
-    });
-
-    document.addEventListener('click', (event) => {
-      if (!notifyPopover.contains(event.target) && !notifyBtn.contains(event.target)) {
-        notifyPopover.classList.remove('open');
+      } else {
+        const empty = document.querySelector('.receipt-empty');
+        if (empty) empty.remove();
       }
-    });
 
-    document.getElementById('markAlertsRead').addEventListener('click', () => {
-      document.getElementById('notifyList').innerHTML = '<div class="popover-item"><strong>All caught up</strong><p>You have no new notifications right now.</p></div>';
+      // Re-setup click handlers after filtering
+      setupReceiptItemClickHandlers();
+    });
+  });
+
+  // ── Real-time Receipt Update (Simulated) ──────────────
+  function updateReceiptBadge() {
+    const badge = document.querySelector('.receipt-badge');
+    if (badge) {
+      badge.textContent = '● Live';
+      badge.style.animation = 'pulse 2s infinite';
+    }
+  }
+
+  // Simulate real-time updates every 30 seconds
+  setInterval(updateReceiptBadge, 30000);
+  updateReceiptBadge();
+
+  // ── Section navigation ────────────────────────────────
+  function openSection(sectionName, title, subtitle) {
+    sections.forEach(s => s.classList.toggle('active', s.id === 'section-' + sectionName));
+    navButtons.forEach(b => b.classList.toggle('active', b.dataset.section === sectionName));
+    if (title)    pageHeading.textContent  = title;
+    if (subtitle) pageSubtitle.textContent = subtitle;
+    if (window.innerWidth <= 920) sidebar.classList.remove('open');
+  }
+
+  navButtons.forEach(btn => {
+    btn.addEventListener('click', () =>
+      openSection(btn.dataset.section, btn.dataset.title, btn.dataset.subtitle)
+    );
+  });
+
+  document.querySelectorAll('[data-open-section]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const nav = document.querySelector('.nav-btn[data-section="' + btn.dataset.openSection + '"]');
+      if (nav) nav.click();
+    });
+  });
+
+  // ── Open Receipt from Fund Transfer button ────────────
+  document.querySelectorAll('[data-open-modal="transactions"]').forEach(b => {
+    b.addEventListener('click', openReceiptModal);
+  });
+
+  // ── Toggle balances ───────────────────────────────────
+  toggleBalancesBtn.addEventListener('click', () => {
+    balancesVisible = !balancesVisible;
+    toggleBalancesBtn.innerHTML = balancesVisible
+      ? '<i class="fas fa-eye"></i>'
+      : '<i class="fas fa-eye-slash"></i>';
+
+    toggleBalancesBtn.style.pointerEvents = 'none';
+    toggleBalancesBtn.style.opacity = '0.6';
+
+    setTimeout(() => {
+      balanceValues.forEach(el => {
+        if (balancesVisible) {
+          el.textContent = 'PHP ' + el.dataset.value;
+          el.classList.remove('hidden-balance');
+        } else {
+          el.textContent = 'PHP ******';
+          el.classList.add('hidden-balance');
+        }
+      });
+      toggleBalancesBtn.style.pointerEvents = 'auto';
+      toggleBalancesBtn.style.opacity = '1';
+      showToast(balancesVisible ? 'Balances revealed' : 'Balances hidden');
+    }, 300);
+  });
+
+  // ── Quick / module action buttons ─────────────────────
+  document.querySelectorAll('.quick-action, .module-action, .table-row-btn').forEach(item => {
+    item.addEventListener('click', () => {
+      item.classList.add('clicked');
+      setTimeout(() => item.classList.remove('clicked'), 180);
+      if (item.dataset.actionMessage) showToast(item.dataset.actionMessage);
+      if (item.dataset.link) setTimeout(() => { window.location.href = item.dataset.link; }, 120);
+    });
+  });
+
+  // ── Notifications popover ─────────────────────────────
+  notifyBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    notifyPopover.classList.toggle('open');
+  });
+
+  document.addEventListener('click', e => {
+    if (!notifyPopover.contains(e.target) && !notifyBtn.contains(e.target)) {
+      notifyPopover.classList.remove('open');
+    }
+  });
+
+  if (markAlertsReadBtn && notifyList) {
+    markAlertsReadBtn.addEventListener('click', () => {
+      notifyList.innerHTML = '<div class="popover-item"><strong>All caught up</strong><p>You have no new notifications right now.</p></div>';
       const badge = document.querySelector('.notify-badge');
       if (badge) badge.style.display = 'none';
       showToast('Notifications marked as read.');
     });
+  }
 
-document.querySelectorAll('.account-item').forEach((item) => {
-      item.addEventListener('click', () => {
-        document.querySelectorAll('.account-item').forEach((card) => card.classList.remove('active'));
-        item.classList.add('active');
-        document.getElementById('detailAccountName').textContent = item.dataset.account;
-        document.getElementById('detailAccountNumber').textContent = item.dataset.number;
-        document.getElementById('detailAccountStatus').textContent = item.dataset.status;
-        document.getElementById('detailAccountBalance').textContent = item.dataset.balance;
-        document.getElementById('detailAccountNote').textContent = item.dataset.note;
-        showToast(`${item.dataset.account} selected.`);
-      });
+  // ── Account items ─────────────────────────────────────
+  document.querySelectorAll('.account-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.account-item').forEach(c => c.classList.remove('active'));
+      item.classList.add('active');
+      document.getElementById('detailAccountName').textContent    = item.dataset.account;
+      document.getElementById('detailAccountNumber').textContent  = item.dataset.number;
+      document.getElementById('detailAccountStatus').textContent  = item.dataset.status;
+      document.getElementById('detailAccountBalance').textContent = item.dataset.balance;
+      document.getElementById('detailAccountNote').textContent    = item.dataset.note;
+      showToast(item.dataset.account + ' selected.');
     });
+  });
 
-    document.querySelectorAll('.alert-dismiss').forEach((button) => {
-      button.addEventListener('click', () => {
-        const item = button.closest('.alert-item');
-        item.style.display = 'none';
-        showToast('Alert dismissed.');
-      });
-    });
+  // ── Transactions Modal ────────────────────────────────
+  function openTransactionsModal()  { receiptModal.classList.add('open'); }
+  function closeTransactionsModal() { receiptModal.classList.remove('open'); }
 
-    securityBtn.addEventListener('click', () => {
-      const enabled = securityBtn.classList.toggle('enabled');
-      securityBtn.textContent = enabled ? 'Enabled' : 'Enable Now';
-      securityMessage.textContent = enabled
-        ? 'Extra protection is now enabled for your profile dashboard session.'
-        : 'Stay Secure, Stay Protected. Add another layer of security to your online banking profile.';
-      showToast(enabled ? 'Security protection enabled.' : 'Security protection disabled.');
-    });
+  if (openTransModalBtn)   openTransModalBtn.addEventListener('click', openTransactionsModal);
+  if (closeTransModalBtn)  closeTransModalBtn.addEventListener('click', closeTransactionsModal);
+  transactionsModal.addEventListener('click', e => {
+    if (e.target === transactionsModal) closeTransactionsModal();
+  });
 
-    function openTransactionsModal() {
-      transactionsModal.classList.add('open');
-    }
-
-    function closeTransactionsModal() {
-      transactionsModal.classList.remove('open');
-    }
-
-    document.getElementById('openTransactionsModalTop').addEventListener('click', openTransactionsModal);
-    document.querySelectorAll('[data-open-modal="transactions"]').forEach((button) => {
-      button.addEventListener('click', openTransactionsModal);
-    });
-    document.getElementById('closeTransactionsModal').addEventListener('click', closeTransactionsModal);
-    transactionsModal.addEventListener('click', (event) => {
-      if (event.target === transactionsModal) closeTransactionsModal();
-    });
-    // ── Profile & Password ──────────────────────────────────
-    const editProfileModal   = document.getElementById('editProfileModal');
-    const changePasswordModal = document.getElementById('changePasswordModal');
-    let pendingPhoto = '';
-
-    document.getElementById('openEditProfile').addEventListener('click', () => {
-      // Pre-fill fields
+  // ── Edit Profile Modal ────────────────────────────────
+  const openEditProfileBtn = document.getElementById('openEditProfile');
+  if (openEditProfileBtn) {
+    openEditProfileBtn.addEventListener('click', () => {
       document.getElementById('editFullName').value = document.getElementById('dispFullName').textContent.trim();
-      document.getElementById('editEmail').value    = document.getElementById('dispEmail').textContent === 'Not set' ? '' : document.getElementById('dispEmail').textContent.trim();
-      document.getElementById('editPhone').value    = document.getElementById('dispPhone').textContent === 'Not set' ? '' : document.getElementById('dispPhone').textContent.trim();
-      // Pre-fill photo preview
-      const img = document.getElementById('profilePhotoImg');
-      const initial = document.getElementById('profilePhotoInitial');
-      const preview = document.getElementById('editPhotoPreview');
-      const initSpan = document.getElementById('editPhotoInitial');
+      const emailText = document.getElementById('dispEmail').textContent.trim();
+      const phoneText = document.getElementById('dispPhone').textContent.trim();
+      document.getElementById('editEmail').value = emailText === 'Not set' ? '' : emailText;
+      document.getElementById('editPhone').value = phoneText === 'Not set' ? '' : phoneText;
+
+      const img      = document.getElementById('profilePhotoImg');
+      const initSpan = document.getElementById('profilePhotoInitial');
+      const preview  = document.getElementById('editPhotoPreview');
       if (img) {
-        preview.innerHTML = `<img src="${img.src}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        preview.innerHTML = '<img src="' + img.src + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
         pendingPhoto = img.src;
       } else {
-        initSpan.textContent = (initial ? initial.textContent : '?');
+        document.getElementById('editPhotoInitial').textContent = initSpan ? initSpan.textContent : '?';
         pendingPhoto = '';
       }
       document.getElementById('editProfileError').style.display = 'none';
       editProfileModal.classList.add('open');
     });
+  }
 
-    document.getElementById('closeEditProfile').addEventListener('click', () => editProfileModal.classList.remove('open'));
-    editProfileModal.addEventListener('click', e => { if (e.target === editProfileModal) editProfileModal.classList.remove('open'); });
+  document.getElementById('closeEditProfile').addEventListener('click', () => editProfileModal.classList.remove('open'));
+  editProfileModal.addEventListener('click', e => { if (e.target === editProfileModal) editProfileModal.classList.remove('open'); });
 
-    // Photo file input
-    document.getElementById('photoInput').addEventListener('change', function () {
+  // Photo input
+  const photoInput = document.getElementById('photoInput');
+  if (photoInput) {
+    photoInput.addEventListener('change', function () {
       const file = this.files[0];
       if (!file) return;
       if (file.size > 2 * 1024 * 1024) { showToast('Image must be under 2MB.'); return; }
@@ -1749,19 +2337,23 @@ document.querySelectorAll('.account-item').forEach((item) => {
       reader.onload = e => {
         pendingPhoto = e.target.result;
         document.getElementById('editPhotoPreview').innerHTML =
-          `<img src="${pendingPhoto}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+          '<img src="' + pendingPhoto + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
       };
       reader.readAsDataURL(file);
     });
+  }
 
-    document.getElementById('saveProfileBtn').addEventListener('click', () => {
-      const btn = document.getElementById('saveProfileBtn');
-      const errEl = document.getElementById('editProfileError');
+  // Save profile
+  const saveProfileBtn = document.getElementById('saveProfileBtn');
+  if (saveProfileBtn) {
+    saveProfileBtn.addEventListener('click', () => {
+      const errEl      = document.getElementById('editProfileError');
       const full_name  = document.getElementById('editFullName').value.trim();
       const email      = document.getElementById('editEmail').value.trim();
       const phone      = document.getElementById('editPhone').value.trim();
       if (!full_name) { errEl.textContent = 'Full name is required.'; errEl.style.display = 'block'; return; }
-      btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
+      saveProfileBtn.disabled = true;
+      saveProfileBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
       fetch('/api/profile/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1770,34 +2362,42 @@ document.querySelectorAll('.account-item').forEach((item) => {
       .then(r => r.json())
       .then(d => {
         if (d.success) {
-          // Update displayed values
           document.getElementById('dispFullName').textContent = d.full_name;
           document.getElementById('dispEmail').textContent   = d.email || 'Not set';
           document.getElementById('dispPhone').textContent   = d.phone_number || 'Not set';
-          // Update header avatar
           const ha = document.getElementById('headerAvatar');
           if (d.photo) {
-            ha.innerHTML = `<img src="${d.photo}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+            ha.innerHTML = '<img src="' + d.photo + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">';
             document.getElementById('profilePhotoDisplay').innerHTML =
-              `<img src="${d.photo}" style="width:100%;height:100%;object-fit:cover;" id="profilePhotoImg">`;
+              '<img src="' + d.photo + '" style="width:100%;height:100%;object-fit:cover;" id="profilePhotoImg">';
           } else {
             ha.textContent = d.full_name[0].toUpperCase();
           }
           editProfileModal.classList.remove('open');
-          showToast('Profile updated successfully.');
+          showToast('Profile updated successfully.', 'success');
         } else {
-          errEl.textContent = d.message || 'Update failed.'; errEl.style.display = 'block';
+          errEl.textContent = d.message || 'Update failed.';
+          errEl.style.display = 'block';
         }
-        btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Save Changes';
+        saveProfileBtn.disabled = false;
+        saveProfileBtn.innerHTML = '<i class="fas fa-check"></i> Save Changes';
       })
-      .catch(() => { errEl.textContent = 'Network error.'; errEl.style.display = 'block'; btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Save Changes'; });
+      .catch(() => {
+        errEl.textContent = 'Network error.';
+        errEl.style.display = 'block';
+        saveProfileBtn.disabled = false;
+        saveProfileBtn.innerHTML = '<i class="fas fa-check"></i> Save Changes';
+      });
     });
+  }
 
-    // Change Password
-    document.getElementById('openChangePassword').addEventListener('click', () => {
-      document.getElementById('currentPassword').value = '';
-      document.getElementById('newPassword').value = '';
-      document.getElementById('confirmPassword').value = '';
+  // ── Change Password Modal ─────────────────────────────
+  const openChangePasswordBtn = document.getElementById('openChangePassword');
+  if (openChangePasswordBtn) {
+    openChangePasswordBtn.addEventListener('click', () => {
+      document.getElementById('currentPassword').value  = '';
+      document.getElementById('newPassword').value      = '';
+      document.getElementById('confirmPassword').value  = '';
       document.getElementById('pwStrengthBar').style.width = '0%';
       document.getElementById('pwStrengthLabel').textContent = '';
       document.getElementById('changePasswordError').style.display = 'none';
@@ -1805,33 +2405,42 @@ document.querySelectorAll('.account-item').forEach((item) => {
     });
     document.getElementById('closeChangePassword').addEventListener('click', () => changePasswordModal.classList.remove('open'));
     changePasswordModal.addEventListener('click', e => { if (e.target === changePasswordModal) changePasswordModal.classList.remove('open'); });
+  }
 
-    document.getElementById('newPassword').addEventListener('input', function () {
-      const v = this.value;
+  // Password strength
+  if (newPasswordInput) {
+    newPasswordInput.addEventListener('input', function () {
+      const v   = this.value;
       const bar = document.getElementById('pwStrengthBar');
       const lbl = document.getElementById('pwStrengthLabel');
       let score = 0;
-      if (v.length >= 6) score++;
-      if (v.length >= 10) score++;
-      if (/[A-Z]/.test(v)) score++;
-      if (/[0-9]/.test(v)) score++;
-      if (/[^A-Za-z0-9]/.test(v)) score++;
+      if (v.length >= 6)            score++;
+      if (v.length >= 10)           score++;
+      if (/[A-Z]/.test(v))          score++;
+      if (/[0-9]/.test(v))          score++;
+      if (/[^A-Za-z0-9]/.test(v))   score++;
       const levels = ['', 'Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
       const colors = ['', '#dc2626', '#ea580c', '#ca8a04', '#16a34a', '#2563eb'];
-      bar.style.width = (score * 20) + '%';
+      bar.style.width      = (score * 20) + '%';
       bar.style.background = colors[score] || '#eef2f7';
-      lbl.textContent = levels[score] || '';
-      lbl.style.color = colors[score] || 'var(--muted)';
+      lbl.textContent      = levels[score] || '';
+      lbl.style.color      = colors[score] || 'var(--muted)';
     });
+  }
 
-    document.getElementById('savePasswordBtn').addEventListener('click', () => {
-      const btn = document.getElementById('savePasswordBtn');
-      const errEl = document.getElementById('changePasswordError');
+  if (savePasswordBtn) {
+    savePasswordBtn.addEventListener('click', () => {
+      const errEl   = document.getElementById('changePasswordError');
       const current = document.getElementById('currentPassword').value;
       const newPw   = document.getElementById('newPassword').value;
       const confirm = document.getElementById('confirmPassword').value;
-      if (!current || !newPw || !confirm) { errEl.textContent = 'All fields are required.'; errEl.style.display = 'block'; return; }
-      btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating…';
+      if (!current || !newPw || !confirm) {
+        errEl.textContent = 'All fields are required.';
+        errEl.style.display = 'block';
+        return;
+      }
+      savePasswordBtn.disabled = true;
+      savePasswordBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating…';
       fetch('/api/profile/change-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1841,76 +2450,50 @@ document.querySelectorAll('.account-item').forEach((item) => {
       .then(d => {
         if (d.success) {
           changePasswordModal.classList.remove('open');
-          showToast('Password changed successfully.');
+          showToast('Password changed successfully.', 'success');
         } else {
-          errEl.textContent = d.message || 'Failed to update password.'; errEl.style.display = 'block';
+          errEl.textContent = d.message || 'Failed to update password.';
+          errEl.style.display = 'block';
         }
-        btn.disabled = false; btn.innerHTML = '<i class="fas fa-lock"></i> Update Password';
+        savePasswordBtn.disabled = false;
+        savePasswordBtn.innerHTML = '<i class="fas fa-lock"></i> Update Password';
       })
-      .catch(() => { errEl.textContent = 'Network error.'; errEl.style.display = 'block'; btn.disabled = false; btn.innerHTML = '<i class="fas fa-lock"></i> Update Password'; });
-    });
-
-    // Receipt Panel Functionality
-    function formatCurrency(value) {
-      const num = Number(value) || 0;
-      return 'PHP ' + num.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    function updateReceiptDisplay(type, amount, timestamp, recipient, reference) {
-      document.getElementById('receiptType').textContent = type || 'Transaction';
-      document.getElementById('receiptAmount').textContent = formatCurrency(amount);
-      document.getElementById('receiptTime').textContent = timestamp || new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) + ' ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-      document.getElementById('receiptRecipient').textContent = recipient || 'N/A';
-      document.getElementById('receiptRefId').textContent = reference || 'RCP-' + Math.floor(Math.random() * 999999).toString().padStart(6, '0');
-    }
-
-    const transactionItems = document.querySelectorAll('.transaction-item');
-    if (transactionItems.length) {
-      transactionItems.forEach((item, index) => {
-        item.addEventListener('click', () => {
-          document.querySelectorAll('.transaction-item.active').forEach(active => active.classList.remove('active'));
-          item.classList.add('active');
-          updateReceiptDisplay(
-            item.dataset.type,
-            item.dataset.amount,
-            item.dataset.timestamp,
-            item.dataset.recipient,
-            item.dataset.reference
-          );
-        });
-        if (index === 0) {
-          item.click();
-        }
+      .catch(() => {
+        errEl.textContent = 'Network error.';
+        errEl.style.display = 'block';
+        savePasswordBtn.disabled = false;
+        savePasswordBtn.innerHTML = '<i class="fas fa-lock"></i> Update Password';
       });
-    } else {
-      updateReceiptDisplay('No Activity', 0, '', 'N/A', 'RCP-000000');
-    }
-
-    // Initialize receipt with default values
-    updateReceiptDisplay('Last Transaction', {{ balance }}, '', 'N/A', 'RCP-000000');
-
-    // Download Receipt Button
-    document.getElementById('downloadReceiptBtn').addEventListener('click', () => {
-      const type = document.getElementById('receiptType').textContent;
-      const amount = document.getElementById('receiptAmount').textContent;
-      const time = document.getElementById('receiptTime').textContent;
-      const refId = document.getElementById('receiptRefId').textContent;
-      const recipient = document.getElementById('receiptRecipient').textContent;
-      const account = '{{ account_number[:4] }}...{{ account_number[-4:] }}';
-      
-      const receiptContent = `PEV BANKING - TRANSACTION RECEIPT\n================================\nDate & Time: ${time}\n\nTRANSACTION DETAILS\n-------------------\nType: ${type}\nAmount: ${amount}\nRecipient/Sender: ${recipient}\nReference ID: ${refId}\nAccount: ${account}\nStatus: Completed Successfully\n\nThank you for using PEV Banking!\n`;
-
-      const blob = new Blob([receiptContent], { type: 'text/plain' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `receipt_${refId.replace(/[^A-Za-z0-9]/g, '')}_${Date.now()}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      showToast('Receipt downloaded successfully!');
     });
-  </script>
+  }
+
+  // ── Animated balance counter ──────────────────────────
+  function animateCounter(el, target, duration = 1000) {
+    const start = performance.now();
+    function tick(now) {
+      const progress = Math.min((now - start) / duration, 1);
+      const ease     = 1 - Math.pow(1 - progress, 4);
+      el.textContent = 'PHP ' + (target * ease).toLocaleString('en-PH', {
+        minimumFractionDigits: 2, maximumFractionDigits: 2
+      });
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // ── Loading overlay + init ────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    balanceValues.forEach(el => {
+      const val = parseFloat(el.dataset.value);
+      if (val > 0) animateCounter(el, val);
+    });
+
+    setTimeout(() => {
+      const overlay = document.getElementById('loadingOverlay');
+      overlay.classList.add('fade-out');
+      setTimeout(() => { overlay.style.display = 'none'; }, 500);
+    }, 2000);
+  });
+</script>
 </body>
 </html>

@@ -19,10 +19,20 @@ except ImportError:
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / '.env')
 
+# Try multiple env var names for compatibility
 BREVO_API_KEY = (
     os.getenv('BREVO_API_KEY')
     or os.getenv('BREVO_KEY')
 )
+
+if not BREVO_API_KEY:
+    import sys
+    print('WARNING: BREVO_API_KEY not found in environment variables. Email sending will fail.', file=sys.stderr)
+
+
+def is_valid_email(email):
+    return bool(email and re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', email))
+
 SMTP_SERVER = (
     os.getenv('SMTP_SERVER')
     or os.getenv('SMTP Server')
@@ -36,17 +46,28 @@ SMTP_KEY = (
     os.getenv('SMTP_KEY')
     or os.getenv('SMTP key')
 )
-BREVO_SENDER_EMAIL = (
+raw_brevo_sender_email = (
     os.getenv('BREVO_SENDER_EMAIL')
     or os.getenv('SYSTEM_APP')
     or os.getenv('System app')
-    or 'no-reply@pevbanking.com'
 )
+BREVO_SENDER_EMAIL = raw_brevo_sender_email if is_valid_email(raw_brevo_sender_email) else 'no-reply@pevbanking.com'
+if raw_brevo_sender_email and not is_valid_email(raw_brevo_sender_email):
+    import sys
+    print(f'WARNING: Invalid BREVO_SENDER_EMAIL value "{raw_brevo_sender_email}". Falling back to {BREVO_SENDER_EMAIL}.', file=sys.stderr)
 BREVO_SENDER_NAME = os.getenv('BREVO_SENDER_NAME', 'PEV Banking')
 BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email'
 
 app = Flask(__name__, template_folder=str(BASE_DIR / 'templates'))
 app.secret_key = 'pev-banking-secret-key-2024'
+
+# Disable caching for templates to ensure latest version is always served
+@app.after_request
+def add_no_cache_headers(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 banking_system = BankingSystem()
 
@@ -56,6 +77,8 @@ def send_brevo_email(to_email, subject, html_content, text_content=None):
         text_content = re.sub('<[^<]+?>', '', html_content)
 
     if BREVO_API_KEY:
+        if not is_valid_email(BREVO_SENDER_EMAIL):
+            return False, 'Email sender address is invalid. Please configure BREVO_SENDER_EMAIL correctly.'
         payload = {
             'sender': {'name': BREVO_SENDER_NAME, 'email': BREVO_SENDER_EMAIL},
             'to': [{'email': to_email}],
