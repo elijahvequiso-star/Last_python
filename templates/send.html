@@ -14,12 +14,15 @@
 <div class="app-shell">
 
   <aside class="sidebar">
-    <div class="logo">PEV<span>.</span></div>
+    <div class="logo">
+      <span style="color:#fbbf24;font-weight:900;">PEV</span><span style="color:#fff;font-weight:700;"> Banking</span>
+    </div>
     <ul class="nav-list">
       <li><a href="{{ url_for('dashboard') }}" class="nav-btn"><i class="fas fa-chart-pie"></i><span>Dashboard</span></a></li>
-      <li><a href="{{ url_for('deposit') }}"  class="nav-btn"><i class="fas fa-arrow-down-to-line"></i><span>Deposit</span></a></li>
-      <li><a href="{{ url_for('withdraw') }}" class="nav-btn"><i class="fas fa-arrow-up-from-line"></i><span>Withdraw</span></a></li>
-      <li><a href="{{ url_for('send') }}"     class="nav-btn active"><i class="fas fa-paper-plane"></i><span>Send Money</span></a></li>
+      <li><a href="{{ url_for('dashboard') }}#accounts" class="nav-btn"><i class="fas fa-building-columns"></i><span>Accounts</span></a></li>
+      <li><a href="{{ url_for('dashboard') }}#fund-transfer" class="nav-btn active"><i class="fas fa-money-bill-transfer"></i><span>Fund Transfer</span></a></li>
+      <li><a href="{{ url_for('dashboard') }}#profile-settings" class="nav-btn"><i class="fas fa-user-gear"></i><span>Profile Settings</span></a></li>
+      <li><a href="{{ url_for('dashboard') }}#support" class="nav-btn"><i class="fas fa-headset"></i><span>Support</span></a></li>
     </ul>
     <div class="logout-wrap">
       <a href="{{ url_for('logout') }}" class="nav-btn logout-btn"><i class="fas fa-right-from-bracket"></i><span>Logout</span></a>
@@ -37,8 +40,8 @@
       </div>
       <div class="topbar-balances">
         <div class="topbar-bal-item">
-          <span class="topbar-bal-label">Savings (Available)</span>
-          <span class="topbar-bal-val" id="liveSavings">PHP {{ "%.2f"|format(savings_balance) }}</span>
+          <span class="topbar-bal-label">Total Available</span>
+          <span class="topbar-bal-val" id="liveSavings">PHP {{ "%.2f"|format(balance) }}</span>
         </div>
       </div>
     </div>
@@ -58,9 +61,29 @@
           <label class="field-label">Recipient Mobile Number</label>
           <div class="text-input-wrap">
             <span class="text-input-icon"><i class="fas fa-mobile-screen"></i></span>
-            <input type="text" id="txnRecipient" class="text-input" placeholder="09XX XXX XXXX" autocomplete="off">
+            <input type="text" id="txnRecipient" class="text-input" placeholder="09XX XXX XXXX" list="contactBook" autocomplete="off">
           </div>
           <p class="field-hint">Enter the recipient's registered PEV mobile number</p>
+          <datalist id="contactBook">
+            {% for contact in contacts %}
+            <option value="{{ contact.phone_number }}">{{ contact.full_name }}</option>
+            {% endfor %}
+          </datalist>
+        </div>
+        <div class="field-group contact-book">
+          <label class="field-label">Contact Book</label>
+          <div class="contact-grid">
+            {% if contacts %}
+              {% for contact in contacts %}
+              <button type="button" class="contact-chip" data-phone="{{ contact.phone_number }}">
+                <strong>{{ contact.full_name }}</strong>
+                <span>{{ contact.phone_number }}</span>
+              </button>
+              {% endfor %}
+            {% else %}
+              <div class="contact-empty">No saved contacts yet. Send to a registered PEV number to add them.</div>
+            {% endif %}
+          </div>
         </div>
 
         <div class="field-group">
@@ -119,9 +142,19 @@
   const amtInput = document.getElementById('txnAmount');
   const recInput = document.getElementById('txnRecipient');
   const summary  = document.getElementById('txnSummary');
+  const contactChips = document.querySelectorAll('.contact-chip');
   const summaryAmt = document.getElementById('summaryAmt');
   const summaryTotal = document.getElementById('summaryTotal');
   const summaryRec = document.getElementById('summaryRecipient');
+
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
 
   amtInput.addEventListener('input', updateSummary);
   recInput.addEventListener('input', updateSummary);
@@ -146,6 +179,13 @@
     } else { summary.style.display = 'none'; }
   }
 
+  contactChips.forEach(button => {
+    button.addEventListener('click', () => {
+      recInput.value = button.dataset.phone;
+      updateSummary();
+    });
+  });
+
   document.getElementById('txnBtn').addEventListener('click', () => {
     const amount    = parseFloat(amtInput.value);
     const recipient = recInput.value.trim();
@@ -169,12 +209,12 @@
         const rc = d.receipt;
         document.getElementById('liveSavings').textContent = 'PHP ' + d.balance.toFixed(2);
         document.getElementById('receiptBody').innerHTML = `
-          <div class="receipt-row"><span>Reference</span><strong>${rc.reference}</strong></div>
-          <div class="receipt-row"><span>From</span><strong>${rc.sender_name}</strong></div>
-          <div class="receipt-row"><span>To</span><strong>${rc.recipient_name} (${rc.recipient_phone})</strong></div>
+          <div class="receipt-row"><span>Reference</span><strong>${escapeHtml(rc.reference)}</strong></div>
+          <div class="receipt-row"><span>From</span><strong>${escapeHtml(rc.sender_name)}</strong></div>
+          <div class="receipt-row"><span>To</span><strong>${escapeHtml(rc.recipient_name)} (${escapeHtml(rc.recipient_phone)})</strong></div>
           <div class="receipt-row"><span>Amount</span><strong>PHP ${rc.amount.toFixed(2)}</strong></div>
-          ${rc.note ? `<div class="receipt-row"><span>Note</span><strong>${rc.note}</strong></div>` : ''}
-          <div class="receipt-row"><span>Date</span><strong>${rc.timestamp}</strong></div>
+          ${rc.note ? `<div class="receipt-row"><span>Note</span><strong>${escapeHtml(rc.note)}</strong></div>` : ''}
+          <div class="receipt-row"><span>Date</span><strong>${escapeHtml(rc.timestamp)}</strong></div>
         `;
         btn.style.display = 'none';
         summary.style.display = 'none';

@@ -19,9 +19,10 @@
       </div>
     <ul class="nav-list">
       <li><a href="{{ url_for('dashboard') }}" class="nav-btn"><i class="fas fa-chart-pie"></i><span>Dashboard</span></a></li>
-      <li><a href="{{ url_for('deposit') }}"  class="nav-btn"><i class="fas fa-arrow-down-to-line"></i><span>Deposit</span></a></li>
-      <li><a href="{{ url_for('withdraw') }}" class="nav-btn active"><i class="fas fa-arrow-up-from-line"></i><span>Withdraw</span></a></li>
-      <li><a href="{{ url_for('send') }}"     class="nav-btn"><i class="fas fa-paper-plane"></i><span>Send Money</span></a></li>
+      <li><a href="{{ url_for('dashboard') }}#accounts" class="nav-btn"><i class="fas fa-building-columns"></i><span>Accounts</span></a></li>
+      <li><a href="{{ url_for('dashboard') }}#fund-transfer" class="nav-btn active"><i class="fas fa-money-bill-transfer"></i><span>Fund Transfer</span></a></li>
+      <li><a href="{{ url_for('dashboard') }}#profile-settings" class="nav-btn"><i class="fas fa-user-gear"></i><span>Profile Settings</span></a></li>
+      <li><a href="{{ url_for('dashboard') }}#support" class="nav-btn"><i class="fas fa-headset"></i><span>Support</span></a></li>
     </ul>
     <div class="logout-wrap">
       <a href="{{ url_for('logout') }}" class="nav-btn logout-btn"><i class="fas fa-right-from-bracket"></i><span>Logout</span></a>
@@ -36,6 +37,10 @@
           <p class="topbar-sub">Withdraw Funds</p>
           <h1 class="topbar-title">{{ full_name }}</h1>
         </div>
+      </div>
+      <div class="topbar-help">
+        <span>Need help? </span>
+        <a href="mailto:{{ admin_email }}?subject=PEV%20Banking%20Support" class="help-link">Message admin</a>
       </div>
       <div class="topbar-balances">
         <div class="topbar-bal-item">

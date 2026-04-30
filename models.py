@@ -116,6 +116,7 @@ class BankingSystem:
         self.users: Dict[str, User] = {}
         self.current_session = None
         self.data_file = Path(__file__).resolve().parent / 'users.json'
+        self.messages_file = Path(__file__).resolve().parent / 'admin_messages.json'
         self._load_users()
         self._ensure_admin_account()
 
@@ -205,6 +206,50 @@ class BankingSystem:
             if user.email.strip().lower() == normalized_email:
                 return user
         return None
+
+    def _load_admin_messages(self):
+        if not self.messages_file.exists():
+            return []
+        try:
+            with open(self.messages_file, 'r', encoding='utf-8') as file:
+                messages = json.load(file)
+            return messages if isinstance(messages, list) else []
+        except (json.JSONDecodeError, OSError):
+            return []
+
+    def _save_admin_messages(self, messages):
+        with open(self.messages_file, 'w', encoding='utf-8') as file:
+            json.dump(messages, file, indent=2)
+
+    def add_admin_message(self, user, message):
+        messages = self._load_admin_messages()
+        item = {
+            'id': secrets.token_hex(4),
+            'username': user.username,
+            'full_name': user.full_name,
+            'phone_number': self.format_phone_number(user.phone_number),
+            'message': message,
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'read': False
+        }
+        messages.insert(0, item)
+        self._save_admin_messages(messages)
+        return item
+
+    def get_admin_messages(self):
+        return self._load_admin_messages()
+
+    def mark_admin_message_read(self, message_id):
+        messages = self._load_admin_messages()
+        changed = False
+        for item in messages:
+            if item.get('id') == message_id:
+                item['read'] = True
+                changed = True
+                break
+        if changed:
+            self._save_admin_messages(messages)
+        return changed
 
     def normalize_phone_number(self, phone):
         if not phone:

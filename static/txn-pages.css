@@ -106,13 +106,33 @@ button, input, a { font: inherit; }
   border-radius: 20px;
   padding: 18px 22px;
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
   box-shadow: var(--shadow);
 }
 
 .txn-topbar-left { display: flex; align-items: center; gap: 14px; }
+.topbar-help {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92rem;
+  color: var(--muted);
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+}
+.topbar-help a.help-link {
+  color: var(--primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+.topbar-help a.help-link:hover {
+  text-decoration: underline;
+}
 
 .back-btn {
   width: 42px; height: 42px;
@@ -289,6 +309,44 @@ button, input, a { font: inherit; }
   outline: none;
 }
 .text-input::placeholder { color: #cbd5e1; }
+
+.contact-book .contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+.contact-chip {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--surface-soft);
+  border-radius: 14px;
+  padding: 14px 16px;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.contact-chip strong {
+  font-size: 0.9rem;
+  color: var(--text);
+}
+.contact-chip span {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.contact-chip:hover {
+  border-color: var(--primary);
+  background: #eff6ff;
+}
+.contact-empty {
+  color: var(--muted);
+  padding: 16px;
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
 
 /* Chips */
 .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }

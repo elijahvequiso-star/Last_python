@@ -136,6 +136,7 @@
     /* ── Header ── */
     .header {
       position: relative;
+      z-index: 90;
       background: rgba(255, 255, 255, 0.88);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(226, 232, 240, 0.9);
@@ -214,7 +215,7 @@
       box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
       padding: 16px;
       display: none;
-      z-index: 20;
+      z-index: 200;
     }
 
     .popover.open { display: block; }
@@ -1410,6 +1411,9 @@
           <i class="fas fa-bell"></i>
           <span class="notify-badge"></span>
         </button>
+        <button class="notify" id="messageBtn" type="button" aria-label="Message Admin">
+          <i class="fas fa-envelope"></i>
+        </button>
         <div class="avatar" id="headerAvatar" style="cursor:pointer;"
              onclick="document.querySelector('.nav-btn[data-section=profile-settings]').click()"
              title="Profile Settings">
@@ -1439,6 +1443,17 @@
               <strong>Transactions synced</strong>
               <p>Your latest banking activity is reflected in the dashboard table.</p>
             </div>
+          </div>
+        </div>
+
+        <!-- Message to Admin Modal -->
+        <div class="popover" id="messagePopover" style="width:400px;">
+          <div class="popover-head">
+            <h3>Message Admin</h3>
+          </div>
+          <div class="popover-list">
+            <textarea id="messageText" placeholder="Type your message here..." style="width:100%;height:100px;padding:10px;border:1px solid var(--line);border-radius:8px;resize:none;"></textarea>
+            <button class="text-btn" id="sendMessageBtn" type="button" style="margin-top:10px;">Send Message</button>
           </div>
         </div>
       </div>
@@ -1978,6 +1993,10 @@
   const sidebar               = document.getElementById('sidebar');
   const notifyBtn             = document.getElementById('notifyBtn');
   const notifyPopover         = document.getElementById('notifyPopover');
+  const messageBtn            = document.getElementById('messageBtn');
+  const messagePopover        = document.getElementById('messagePopover');
+  const messageText           = document.getElementById('messageText');
+  const sendMessageBtn        = document.getElementById('sendMessageBtn');
   const toastEl               = document.getElementById('toast');
   const transactionsModal     = document.getElementById('transactionsModal');
   const closeTransModalBtn    = document.getElementById('closeTransactionsModalBtn');
@@ -2191,17 +2210,20 @@ Status: COMPLETED
   updateReceiptBadge();
 
   // ── Section navigation ────────────────────────────────
-  function openSection(sectionName, title, subtitle) {
+  function openSection(sectionName, title, subtitle, updateHash = false) {
     sections.forEach(s => s.classList.toggle('active', s.id === 'section-' + sectionName));
     navButtons.forEach(b => b.classList.toggle('active', b.dataset.section === sectionName));
     if (title)    pageHeading.textContent  = title;
     if (subtitle) pageSubtitle.textContent = subtitle;
+    if (updateHash && history.replaceState) {
+      history.replaceState(null, '', sectionName === 'dashboard' ? window.location.pathname : '#' + sectionName);
+    }
     if (window.innerWidth <= 920) sidebar.classList.remove('open');
   }
 
   navButtons.forEach(btn => {
     btn.addEventListener('click', () =>
-      openSection(btn.dataset.section, btn.dataset.title, btn.dataset.subtitle)
+      openSection(btn.dataset.section, btn.dataset.title, btn.dataset.subtitle, true)
     );
   });
 
@@ -2256,12 +2278,50 @@ Status: COMPLETED
   // ── Notifications popover ─────────────────────────────
   notifyBtn.addEventListener('click', e => {
     e.stopPropagation();
+    messagePopover.classList.remove('open');
     notifyPopover.classList.toggle('open');
   });
 
   document.addEventListener('click', e => {
     if (!notifyPopover.contains(e.target) && !notifyBtn.contains(e.target)) {
       notifyPopover.classList.remove('open');
+    }
+  });
+
+  // ── Message to Admin popover ──────────────────────────
+  messageBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    notifyPopover.classList.remove('open');
+    messagePopover.classList.toggle('open');
+  });
+
+  document.addEventListener('click', e => {
+    if (!messagePopover.contains(e.target) && !messageBtn.contains(e.target)) {
+      messagePopover.classList.remove('open');
+    }
+  });
+
+  sendMessageBtn.addEventListener('click', async () => {
+    const message = messageText.value.trim();
+    if (!message) {
+      showToast('Please enter a message.', 'error');
+      return;
+    }
+    try {
+      const response = await fetch('/api/send-message-to-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+      });
+      if (response.ok) {
+        showToast('Message sent to admin successfully!', 'success');
+        messageText.value = '';
+        messagePopover.classList.remove('open');
+      } else {
+        showToast('Failed to send message. Please try again.', 'error');
+      }
+    } catch (error) {
+      showToast('Error sending message.', 'error');
     }
   });
 
@@ -2483,6 +2543,14 @@ Status: COMPLETED
 
   // ── Loading overlay + init ────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
+    const initialSection = window.location.hash.replace('#', '');
+    if (initialSection) {
+      const initialNav = document.querySelector('.nav-btn[data-section="' + initialSection + '"]');
+      if (initialNav) {
+        openSection(initialNav.dataset.section, initialNav.dataset.title, initialNav.dataset.subtitle, false);
+      }
+    }
+
     balanceValues.forEach(el => {
       const val = parseFloat(el.dataset.value);
       if (val > 0) animateCounter(el, val);

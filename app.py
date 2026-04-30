@@ -4,6 +4,7 @@ import re
 import requests
 import smtplib
 import hashlib
+from html import escape
 from datetime import datetime, timedelta
 from pathlib import Path
 from email.mime.text import MIMEText
@@ -57,6 +58,14 @@ if raw_brevo_sender_email and not is_valid_email(raw_brevo_sender_email):
     print(f'WARNING: Invalid BREVO_SENDER_EMAIL value "{raw_brevo_sender_email}". Falling back to {BREVO_SENDER_EMAIL}.', file=sys.stderr)
 BREVO_SENDER_NAME = os.getenv('BREVO_SENDER_NAME', 'PEV Banking')
 BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email'
+ADMIN_CONTACT_EMAIL = os.getenv('ADMIN_EMAIL', 'admin@pevbanking.com')
+
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY') or os.getenv('SUPABASE_KEY')
+SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+SUPABASE_AUTH_KEY = SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY
+SUPABASE_USERS_TABLE = os.getenv('SUPABASE_USERS_TABLE', 'app_users')
+SUPABASE_ACCOUNTS_TABLE = os.getenv('SUPABASE_ACCOUNTS_TABLE', 'accounts')
 
 app = Flask(__name__, template_folder=str(BASE_DIR / 'templates'))
 app.secret_key = 'pev-banking-secret-key-2024'
@@ -130,6 +139,72 @@ def send_brevo_email(to_email, subject, html_content, text_content=None):
     except Exception as exc:
         app.logger.exception('Brevo SMTP send exception')
         return False, str(exc)
+
+
+def supabase_insert_user(user_data):
+    if not SUPABASE_URL or not SUPABASE_AUTH_KEY:
+        return False, 'Supabase not configured.'
+    if not user_data.get('username') or not user_data.get('email') or not user_data.get('password_hash'):
+        return False, 'Missing user data for Supabase.'
+
+    base_url = SUPABASE_URL.rstrip('/')
+    supabase_url = base_url + f'/rest/v1/{SUPABASE_USERS_TABLE}'
+    headers = {
+        'apikey': SUPABASE_AUTH_KEY,
+        'Authorization': f'Bearer {SUPABASE_AUTH_KEY}',
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+    }
+    payload = {
+        'full_name': user_data.get('full_name'),
+        'username': user_data.get('username'),
+        'email': user_data.get('email'),
+        'phone_number': user_data.get('phone_number'),
+        'password_hash': user_data.get('password_hash'),
+        'is_admin': user_data.get('is_admin', False)
+    }
+    try:
+        response = requests.post(supabase_url, json=payload, headers=headers, timeout=15)
+        if response.status_code in (200, 201, 202):
+            created = response.json()[0] if response.text else {}
+            user_id = created.get('id')
+            if user_id:
+                account_url = base_url + f'/rest/v1/{SUPABASE_ACCOUNTS_TABLE}'
+                account_payload = {
+                    'user_id': user_id,
+                    'balance': float(user_data.get('balance', 0.0) or 0.0)
+                }
+                account_response = requests.post(
+                    account_url,
+                    json=account_payload,
+                    headers={**headers, 'Prefer': 'return=minimal'},
+                    timeout=15
+                )
+                if account_response.status_code not in (200, 201, 202):
+                    return False, f'Supabase account insert failed {account_response.status_code}: {account_response.text}'
+            return True, None
+        return False, f'Supabase insert failed {response.status_code}: {response.text}'
+    except Exception as exc:
+        return False, str(exc)
+
+
+def record_signup_to_supabase(user):
+    user_data = {
+        'full_name': user.full_name,
+        'username': user.username,
+        'email': user.email,
+        'phone_number': user.phone_number,
+        'password_hash': user.password_hash,
+        'balance': user.account.balance,
+        'is_admin': user.is_admin
+    }
+    success, error = supabase_insert_user(user_data)
+    if not success:
+        app.logger.warning('Supabase signup sync failed for %s: %s', user.username, error)
+    else:
+        app.logger.info('Supabase signup synced for %s', user.username)
+    return success
+
 def generate_otp():
     return ''.join(str(random.randint(0, 9)) for _ in range(6))
 
@@ -231,6 +306,10 @@ def api_signup_verify_otp():
     ):
         return jsonify({'success': False, 'message': 'Could not create account. Please try again.'}), 400
 
+    user = banking_system.get_user_by_username(payload['username'])
+    if user:
+        record_signup_to_supabase(user)
+
     session.pop('signup_otp', None)
     session.pop('signup_otp_expires', None)
     session.pop('signup_payload', None)
@@ -298,6 +377,9 @@ def signup():
             flash('Password must be at least 6 characters', 'error')
             return render_template('signup.html')
         if banking_system.register(full_name, username, password, normalized_phone, email):
+            user = banking_system.get_user_by_username(username)
+            if user:
+                record_signup_to_supabase(user)
             flash('Account created successfully! Please login.', 'success')
             return redirect(url_for('login'))
         else:
@@ -399,6 +481,21 @@ def admin_api_transactions():
               'recipient': i['txn'].recipient}
             for i in stats['all_transactions']]
     return jsonify({'success': True, 'transactions': txns})
+
+@app.route('/admin/api/messages', methods=['GET'])
+def admin_api_messages():
+    if not admin_required():
+        return jsonify({'success': False}), 403
+    messages = banking_system.get_admin_messages()
+    return jsonify({'success': True, 'messages': messages})
+
+@app.route('/admin/api/messages/<message_id>/read', methods=['POST'])
+def admin_api_mark_message_read(message_id):
+    if not admin_required():
+        return jsonify({'success': False}), 403
+    if banking_system.mark_admin_message_read(message_id):
+        return jsonify({'success': True})
+    return jsonify({'success': False, 'message': 'Message not found'}), 404
 
 @app.route('/admin/api/stats', methods=['GET'])
 def admin_api_stats():
@@ -536,23 +633,65 @@ def api_withdraw():
 def api_send():
     if 'username' not in session:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    user = banking_system.get_current_user()
+    if not user:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     try:
-        amount = float(request.json['amount'])
-        recipient = request.json['recipient'].strip()
-        note = request.json.get('note', '').strip()
+        data = request.json or {}
+        amount = float(data.get('amount', 0))
+        recipient = data.get('recipient', '').strip()
+        note = data.get('note', '').strip()
         if not recipient:
-            return jsonify({'success': False, 'message': 'Recipient number required'})
+            return jsonify({'success': False, 'message': 'Enter recipient mobile number'})
         success, message, receipt = banking_system.send_money(amount, recipient, note)
-        if success:
-            return jsonify({
-                'success': True,
-                'balance': banking_system.get_current_user().account.balance,
-                'message': message,
-                'receipt': receipt
-            })
-        return jsonify({'success': False, 'message': message})
-    except:
+        if not success:
+            return jsonify({'success': False, 'message': message})
+
+        recipient_user = banking_system.get_user_by_username(receipt['recipient'])
+        reference_seed = f"{receipt['sender']}-{receipt['recipient']}-{receipt['timestamp']}-{amount}"
+        reference = 'PEV-' + hashlib.sha1(reference_seed.encode()).hexdigest()[:10].upper()
+        return jsonify({
+            'success': True,
+            'message': message,
+            'balance': user.account.balance,
+            'savings_balance': user.account.savings_balance,
+            'current_balance': user.account.current_balance,
+            'receipt': {
+                'reference': reference,
+                'sender_name': user.full_name,
+                'recipient_name': recipient_user.full_name if recipient_user else receipt['recipient'],
+                'recipient_phone': banking_system.format_phone_number(recipient_user.phone_number) if recipient_user else recipient,
+                'amount': amount,
+                'note': note,
+                'timestamp': receipt['timestamp']
+            }
+        })
+    except (TypeError, ValueError):
         return jsonify({'success': False, 'message': 'Invalid amount'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/send-message-to-admin', methods=['POST'])
+def api_send_message_to_admin():
+    if 'username' not in session:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    user = banking_system.get_current_user()
+    if not user:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    try:
+        data = request.json
+        message = data.get('message', '').strip()
+        if not message:
+            return jsonify({'success': False, 'message': 'Message cannot be empty'})
+        banking_system.add_admin_message(user, message)
+        subject = f'Message from {user.full_name} ({user.username})'
+        html = f'<p><strong>From:</strong> {escape(user.full_name)} ({escape(user.username)})</p><p><strong>Message:</strong></p><p>{escape(message)}</p>'
+        success, error = send_brevo_email(ADMIN_CONTACT_EMAIL, subject, html)
+        if success:
+            return jsonify({'success': True})
+        return jsonify({'success': True, 'email_sent': False, 'message': error or 'Message saved, but email delivery failed'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/deposit')
 def deposit():
@@ -577,6 +716,7 @@ def deposit():
         deposit_transactions=deposit_transactions,
         deposit_count=sum(1 for txn in user.account.transactions if txn.type == 'DEPOSIT'),
         total_deposited=sum(txn.amount for txn in user.account.transactions if txn.type == 'DEPOSIT'),
+        admin_email=ADMIN_CONTACT_EMAIL,
     )
 
 @app.route('/withdraw')
@@ -589,7 +729,8 @@ def withdraw():
     return render_template('withdraw.html', balance=user.account.balance,
                            savings_balance=user.account.savings_balance,
                            current_balance=user.account.current_balance,
-                           full_name=user.full_name)
+                           full_name=user.full_name,
+                           admin_email=ADMIN_CONTACT_EMAIL)
 
 @app.route('/send')
 def send():
@@ -598,12 +739,22 @@ def send():
     user = banking_system.get_current_user()
     if not user:
         return redirect(url_for('login'))
+    contacts = [
+        {
+            'full_name': u.full_name,
+            'phone_number': banking_system.format_phone_number(u.phone_number)
+        }
+        for u in banking_system.users.values()
+        if u.username != user.username and not u.is_admin
+    ]
     return render_template(
         'send.html',
         balance=user.account.balance,
         savings_balance=user.account.savings_balance,
         full_name=user.full_name,
-        phone_number=banking_system.format_phone_number(user.phone_number)
+        phone_number=banking_system.format_phone_number(user.phone_number),
+        contacts=contacts,
+        admin_email=ADMIN_CONTACT_EMAIL
     )
 
 @app.route('/logout')
